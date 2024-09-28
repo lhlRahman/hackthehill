@@ -1,6 +1,6 @@
 'use client'
-import AddMission from './Components/addMission.js';
-import EditMission from './Components/editMission.js';
+import AddMission from '../components/addMission.js';
+import EditMission from '../components/editMission.js';
 import React, { useState } from 'react';
 
 export default function Home() {
@@ -12,6 +12,9 @@ export default function Home() {
   }
 
   const [mission, setMission] = useState(sample);
+  const [coordinates, setCoordinates] = useState([]);
+  const [address, setAddress] = useState("");
+
 
     return (
       <div className="min-h-screen">

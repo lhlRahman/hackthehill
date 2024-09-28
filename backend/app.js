@@ -8,6 +8,7 @@ import { unknownEndpoint, errorHandler } from "./utils/middleware.js";
 import missionRouter from "./routes/mission.js";
 import userRouter from "./routes/user.js";
 import https from "https";
+import textTo3DRoutes from "./routes/textTo3D.js"
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use(express.static("dist"));
 // Routes
 app.use("/mission", missionRouter);
 app.use("/user", userRouter);
+app.use('/api', textTo3DRoutes);
 
 app.get("/health", (req, res, next) => {
     res.sendStatus(200);

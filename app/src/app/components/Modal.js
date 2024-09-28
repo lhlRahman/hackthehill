@@ -1,5 +1,13 @@
+'use client'
+import styles from '../styles/Modal.module.scss';
+import AutoCompleteInput from './autoCompleteInput.js';
+import React, { useState } from 'react';
+
 export default function Modal({show, onClose, setMission}) {
     
+    const [coordinates, setCoordinates] = useState([]);
+    const [address, setAddress] = useState("");
+
     const handleSubmit = (e) => {
         e.preventDefault();
     
@@ -36,12 +44,19 @@ export default function Modal({show, onClose, setMission}) {
                         name="description"
                         placeholder="Description"
                     />
-                    <input
-                        className="bg-white text-gray-500"
-                        id="location"
-                        name="location"
-                        placeholder="Location"
-                    />
+                    <div className={`${styles.locationWrapper} ${styles.box}`}>
+                        <AutoCompleteInput
+                            setCoordinates={setCoordinates}
+                            setAddress={setAddress}
+                        />
+                        <div className={styles.title}>
+                            <div className={styles.icon}>
+                            <img src="/icons/locationIconGray.svg" />
+                            <img src="/icons/locationIcon.svg" />
+                            </div>
+                            Location
+                        </div>
+                    </div>
                     <button
                         className="bg-gray-500 text-white">
                             Add!
