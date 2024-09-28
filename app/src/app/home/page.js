@@ -13,14 +13,25 @@ export default function Home() {
           <div>
             {/* Display all missions */}
           </div>
-          <div>
-            {/* Add a missison */}
-            <AddMission></AddMission>
+
+          <div className="flex flex-col center-items ml-64 mr-64 mt-16">
+            <h2>Current Mission:</h2>
+
+            <div className=" border-red-500 border-4 w-full h-40">display something!</div>
+
+              <div>
+                {/* Display all missions */}
+              </div>
+              <div>
+                {/* Cancel a mission */}
+                <EditMission></EditMission>
+              </div>
           </div>
           <div>
             {/* Cancel a mission */}
             <EditMission></EditMission>
           </div>
       </div>
+
     );
   }
