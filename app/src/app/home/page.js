@@ -29,16 +29,8 @@ export default function Home() {
             <div className=" border-red-500 border-4 w-full h-40">display something!</div>
 
               <div>
-                {/* Display all missions */}
-              </div>
-              <div>
-                {/* Cancel a mission */}
                 <EditMission></EditMission>
               </div>
-          </div>
-          <div>
-            {/* Cancel a mission */}
-            <EditMission></EditMission>
           </div>
       </div>
 
