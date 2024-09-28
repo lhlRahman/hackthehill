@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import { motion } from "framer-motion"
-import {setUser} from "../components/user-context.js"
 
 export default function Component() {
   const [inputs, setInputs] = useState({
@@ -33,7 +32,6 @@ export default function Component() {
         throw new Error("Network response was not ok")
       }
 
-      setUser({ token: data.token, username: username, points: data.points, friends: data.friends });
       const data = await response.json()
       localStorage.setItem("token", data.token)
       window.location.replace("home")
