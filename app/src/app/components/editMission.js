@@ -1,10 +1,11 @@
 'use client'
 import { useState } from 'react';
-export default function EditMission( { setTokens, tokens, active } ) {
+export default function EditMission( { setTokens, tokens, mission, setMission } ) {
 
     const onClick = () => {
-        if(active) {
+        if(mission.active) {
             setTokens(tokens-1);
+            setMission( {active:false});
         }
     }
 

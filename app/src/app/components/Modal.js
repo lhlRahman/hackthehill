@@ -22,7 +22,7 @@ export default function Modal({show, onClose, setMission, mission, setTokens, to
         
         if (title && description && location){
             setTokens(tokens+1);
-            setMission({title, description, location});
+            setMission({title, description, location, active});
             onClose();
         }
     }
