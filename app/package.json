@@ -9,6 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
+    "@nextui-org/dropdown": "^2.1.31",
+    "@nextui-org/system": "^2.2.6",
+    "@nextui-org/theme": "^2.2.11",
+    "framer-motion": "^11.9.0",
+    "next": "14.2.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+=======
     "next": "14.2.13",
     "react": "^18",
     "react-dom": "^18"
@@ -16,6 +27,7 @@
   "devDependencies": {
     "@types/node": "22.7.4",
     "@types/react": "18.3.10",
+>>>>>>> 6ef1b8f8df38201f3c560b398111de544e6de7bd
     "eslint": "^8",
     "eslint-config-next": "14.2.13",
     "postcss": "^8",
