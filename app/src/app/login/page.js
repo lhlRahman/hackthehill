@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense } from "react";
-import Background from "../components/background.js"
 import "./style.css"
 
 function Login() {
@@ -50,7 +49,6 @@ function Login() {
                         </div>
                     </form>
                 </Suspense>
-                <Background />
             </div>
         </>
     );
