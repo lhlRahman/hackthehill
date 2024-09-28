@@ -1,0 +1,774 @@
+// ./index.js
+import app from "./app.js";
+
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on port ${process.env.PORT}`);
+});// ./utils/auth.js
+const path = require("path");
+const jsonwebtoken = require("jsonwebtoken");
+const fs = require("fs");
+
+// Utils
+const isEmpty = require(path.join(__dirname, "./isEmpty.js"));
+
+// Keys
+const pathToPubKey = path.join(__dirname, "..", "id_rsa_pub.pem");
+const PUB_KEY = fs.readFileSync(pathToPubKey, "utf8");
+
+/**
+ * This is an authentication middleware function
+ */
+function authMiddleware(req, res, next) {
+  if (isEmpty(req.headers.authorization)) {
+    return res.status(401).json({ msg: "Access denied" });
+  }
+  const tokenParts = req.headers.authorization.split(" ");
+  if (
+    tokenParts.length == 2 &&
+    tokenParts[0] === "Bearer" &&
+    tokenParts[1].match(/\S+\.\S+\.\S+/) !== null
+  ) {
+    try {
+      const verification = jsonwebtoken.verify(tokenParts[1], PUB_KEY, {
+        algorithms: ["RS256"],
+      });
+      req.jwt = verification;
+      req._id = req.jwt.sub;
+      next();
+    } catch (err) {
+      return res.status(401).json({ msg: "Access denied" });
+    }
+  } else {
+    return res.status(401).json({ msg: "Access denied" });
+  }
+}
+
+module.exports = authMiddleware;// ./utils/isEmpty.js
+module.exports = isEmpty = (input) => {
+    return (
+      input === undefined ||
+      input === null ||
+      (typeof input === "object" && Object.keys(input).length === 0) ||
+      (typeof input === "string" && input.trim().length === 0)
+    );
+  };// ./utils/password.js
+const crypto = require("crypto");
+const jsonwebtoken = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
+
+// Keys
+const pathToKey = path.join(__dirname, "..", "id_rsa_priv.pem");
+const pathToPubKey = path.join(__dirname, "..", "id_rsa_pub.pem");
+const PRIV_KEY = fs.readFileSync(pathToKey, "utf8");
+const PUB_KEY = fs.readFileSync(pathToPubKey, "utf8");
+
+/**
+ *
+ * @param {*} password - The plain text password
+ * @param {*} hash - The hash stored in the database
+ * @param {*} salt - The salt stored in the database
+ *
+ * This function uses the crypto library to decrypt the hash using the salt and then compares
+ * the decrypted hash/salt with the password that the user provided at login
+ */
+function validatePassword(password, hash, salt) {
+  var hashVerify = crypto
+    .pbkdf2Sync(password, salt, 10000, 64, "sha512")
+    .toString("hex");
+  return hash === hashVerify;
+}
+
+/**
+ *
+ * @param {*} password - The password string that the user inputs to the password field in the register form
+ *
+ * This function takes a plain text password and creates a salt and hash out of it.  Instead of storing the plaintext
+ * password in the database, the salt and hash are stored for security
+ *
+ * ALTERNATIVE: It would also be acceptable to just use a hashing algorithm to make a hash of the plain text password.
+ * You would then store the hashed password in the database and then re-hash it to verify later (similar to what we do here)
+ */
+function genPassword(password) {
+  var salt = crypto.randomBytes(32).toString("hex");
+  var genHash = crypto
+    .pbkdf2Sync(password, salt, 10000, 64, "sha512")
+    .toString("hex");
+
+  return {
+    salt: salt,
+    hash: genHash,
+  };
+}
+
+/**
+ * @param {*} user - The user object.  We need this to set the JWT `sub` payload property to the MongoDB user ID
+ */
+function issueJWT(user) {
+  const _id = user._id;
+
+  const expiresIn = "1d";
+
+  let payload = {
+    sub: _id,
+    iat: Date.now(),
+  };
+
+  const signedToken = jsonwebtoken.sign(payload, PRIV_KEY, {
+    expiresIn: expiresIn,
+    algorithm: "RS256",
+  });
+
+  return {
+    token: "Bearer " + signedToken,
+    expires: expiresIn,
+  };
+}
+
+/**
+ * @param {*} token - The jwt issued token
+ * @param {*} rules - The given rules(first element of each elements of rules array in the given should be eqaul to the second element)
+ */
+function validateToken(token, rules) {
+  const tokenParts = token.toString().trim().split(" ");
+
+  if (
+    !(
+      tokenParts.length == 2 &&
+      tokenParts[0] === "Bearer" &&
+      tokenParts[1].match(/\S+\.\S+\.\S+/) !== null
+    )
+  ) {
+    return false;
+  }
+  try {
+    const verification = jsonwebtoken.verify(tokenParts[1], PUB_KEY, {
+      algorithms: ["RS256"],
+    });
+    for (let i = 0; i < rules.length; i++) {
+      if (
+        !verification[rules[i][0]] &&
+        verification[rules[i][0]] !== rules[i][1]
+      ) {
+        return false;
+      }
+    }
+  } catch (err) {
+    return false;
+  }
+
+  return true;
+}
+
+module.exports = {
+  validatePassword,
+  genPassword,
+  issueJWT,
+  validateToken,
+};// ./utils/middleware.js
+const errorHandler = (error, request, response, next) => {
+  console.log("errorHandler called");
+  console.error(error.message);
+  console.log(error);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).send({ error: error.message });
+  } else if (error.me === "User not found") {
+    return response.status(404).end();
+  }
+
+  next(error);
+};
+
+const unkownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+export { errorHandler, unkownEndpoint }// ./models/user.js
+import { Schema, model } from "mongoose";
+
+const UserSchema = new Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  points: {
+    type: Number,
+    default: 0,
+  },
+  friends: {
+    type: Array,
+    default: [],
+  },
+});
+
+const User = model("User", UserSchema);
+export default User;// ./models/mission.js
+import { Schema, model } from "mongoose";
+
+const missionSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
+  title: String,
+  detail: String,
+  amount: Number,
+  dateDue: Date,
+  dateCreated: {
+    type: Date,
+    default: new Date(),
+  },
+  dateUpdated: Date,
+  location: {
+    name: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["Point"],
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+  },
+  repeat: String,
+  link: String,
+  priority: {
+    type: Number,
+    min: 0,
+    max: 2,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+  success: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+missionSchema.index({ location: "2dsphere" });
+
+const Mission = model("Mission", PledgeSchema);
+module.exports = Mission;// ./controllers/user.js
+import User from "../models/User";
+import path from "path";
+
+// Utils
+const isEmpty = require(path.join(__dirname, "../utils/isEmpty.js"));
+const { genPassword, validatePassword, issueJWT } = require(path.join(
+  __dirname,
+  "../utils/password.js"
+));
+
+const registerUser = async (req, res) => {
+  let { username, password } = req.body;
+
+  if (isEmpty(username)) {
+    return res.status(400).json({ msg: "Username is required" });
+  }
+  if (isEmpty(password)) {
+    return res.status(400).json({ msg: "Password is required" });
+  }
+
+  username = username.toLowerCase();
+  User.findOne({ username: username }).then((user) => {
+    if (!isEmpty(user)) {
+      return res.status(404).json({ msg: "Account already exists" });
+    }
+
+    const newUser = new User({
+      username: username,
+      password: password,
+      balance: 0,
+      friends: [],
+    });
+
+    try {
+      newUser.save().then((user) => {
+        return res.status(200).json({ msg: "User created successfully", user });
+      });
+    } catch (err) {
+      return res.status(400).json({ error: err });
+    }
+  });
+};
+
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+
+  if (isEmpty(username)) {
+    return res.status(400).json({ msg: "Username is required" });
+  }
+  if (isEmpty(password)) {
+    return res.status(400).json({ msg: "Password is required" });
+  }
+
+  User.findOne({ username: username.toString().toLowerCase() })
+    .then((user) => {
+      if (isEmpty(user)) {
+        return res.status(401).json({ msg: "Authentication failed" });
+      }
+
+      const isValid = user.password === password;
+
+      if (isValid) {
+        const tokenObject = issueJWT(user);
+
+        return res.status(200).json({
+          token: tokenObject.token,
+          expiresIn: tokenObject.expires,
+          user: {
+            username: user.username,
+            _id: user._id,
+          },
+        });
+      } else {
+        return res.status(400).json({ msg: "Wrong username/password" });
+      }
+    })
+    .catch((err) => {
+      return res.status(400).json({ error: err });
+    });
+};
+
+const getBalance = async (req, res) => {
+  User.findOne({ _id: req._id })
+    .then((user) => {
+      if (isEmpty(user)) {
+        return res.status(401).json({ msg: "Authentication failed" });
+      }
+      return res.status(200).json({ balance: user.points });
+    })
+    .catch((err) => {
+      return res.status(400).json({ error: err });
+    });
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getBalance,
+};// ./controllers/mission.js
+import Mission from "../models/mission";
+import User from "../models/User";
+
+const createMission = async (req, res) => {
+  let { title, detail, amount, dateDue, location, repeat, priority, link } = req.body;
+
+  const userId = req._id;
+
+  if (isEmpty(title) || title.length > 47) {
+    return res.status(400).json({
+      msg: "Title is required and should contain less than 48 characters",
+    });
+  }
+
+  if (!isEmpty(detail) && detail.length > 108) {
+    return res.status(400).json({
+      msg: "Detail should contain less than 109 characters",
+    });
+  }
+
+  let parsedAmount = parseFloat(amount);
+  if (
+    isEmpty(amount) ||
+    isNaN(parsedAmount) ||
+    parsedAmount > 5 ||
+    parsedAmount < 0
+  ) {
+    return res.status(400).json({ msg: "The amount is invalid" });
+  }
+  amount = parsedAmount;
+
+  if (typeof location !== "object") {
+    try {
+      location = JSON.parse(location);
+    } catch (e) {}
+  }
+
+  if (
+    isEmpty(location) ||
+    isEmpty(location.name) ||
+    isEmpty(location.type) ||
+    location.type != "Point" ||
+    isEmpty(location.coordinates) ||
+    location.coordinates.length != 2
+  ) {
+    return res.status(400).json({ msg: "The location is not valid" });
+  }
+
+  let parsedPriority = parseInt(priority);
+  if (
+    isEmpty(priority) ||
+    isNaN(parsedPriority) ||
+    parsedPriority < 0 ||
+    parsedPriority > 2
+  ) {
+    return res.status(400).json({
+      msg: "The priority should be one of three options(high, medium, low)",
+    });
+  }
+
+  if (isEmpty(dateDue)) {
+    return res.status(400).json({
+      msg: "The date or time is invalid",
+    });
+  }
+  dateDue = dateDue.toString();
+  // dd-mm-yyyy,hh:mm:ss
+  let dateAndTime = dateDue.split(",");
+  if (dateAndTime.length != 2) {
+    return res.status(400).json({
+      msg: "The date or time is invalid",
+    });
+  }
+  let date = dateAndTime[0].split("-");
+  if (date.length != 3) {
+    return res.status(400).json({
+      msg: "The date is invalid",
+    });
+  }
+  let time = dateAndTime[1].split(":");
+  if (time.length != 3) {
+    return res.status(400).json({
+      msg: "The time is invalid",
+    });
+  }
+  for (let i = 0; i < 3; i++) {
+    date[i] = parseInt(date[i]);
+    if (isNaN(date[i])) {
+      return res.status(400).json({
+        msg: "The date is invalid",
+      });
+    }
+  }
+
+  for (let i = 0; i < 3; i++) {
+    time[i] = parseInt(time[i]);
+    if (isNaN(time[i])) {
+      return res.status(400).json({
+        msg: "The time is invalid",
+      });
+    }
+  }
+
+  if (
+    date[0] < 1 ||
+    date[0] > 31 ||
+    date[1] < 1 ||
+    date[1] > 12 ||
+    date[2] < 1
+  ) {
+    return res.status(400).json({
+      msg: "The date is invalid",
+    });
+  }
+
+  if (
+    time[0] < 0 ||
+    time[0] > 23 ||
+    time[1] < 0 ||
+    time[1] > 59 ||
+    time[2] < 0 ||
+    time[2] > 59
+  ) {
+    return res.status(400).json({
+      msg: "The time is invalid",
+    });
+  }
+
+  dateDue = Date.UTC(
+    date[2].toString().padStart(4, "0"),
+    date[1].toString().padStart(2, "0"),
+    date[0].toString().padStart(2, "0"),
+    time[0].toString().padStart(2, "0"),
+    time[1].toString().padStart(2, "0")
+  );
+
+  if (dateDue <= new Date().getUTCDate()) {
+    return res.status(400).json({
+      msg: "The date or time is invalid",
+    });
+  }
+
+  const mission = new Mission({
+    user: userId,
+    title,
+    detail,
+    amount,
+    dateDue,
+    location,
+    repeat,
+    priority,
+    link,
+    dateCreated: new Date(),
+    dateUpdated: new Date(),
+    completed: false,
+    success: false,
+  });
+
+  mission
+    .save()
+    .then((added) => {
+      return res.status(200).json({ mission: added });
+    })
+    .catch((err) => {
+      return res.status(400).json({ msg: err });
+    });
+};
+
+const getMissions = async (req, res) => {
+  const userId = req._id;
+  Mission.find({ user: userId })
+    .then((missions) => {
+      if (isEmpty(missions)) {
+        return res.status(404).json({ msg: "There are no missions", missions: [] });
+      }
+      return res.status(200).json({ missions });
+    })
+    .catch((err) => {
+      return res.status(400).json({ msg: err });
+    });
+};
+
+const editMission = async (req, res) => {
+  const { id } = req.params;
+  const { title, detail, link, priority } = req.body;
+
+  if (!isEmpty(title) && title.length > 47) {
+    return res
+      .status(400)
+      .json({ msg: "Title should contain less than 48 characters" });
+  }
+  if (!isEmpty(detail) && detail.length > 108) {
+    return res
+      .status(400)
+      .json({ msg: "Detail should contain less than 109 characters" });
+  }
+  let parsedPriority = parseInt(priority);
+  if (
+    !isEmpty(priority) &&
+    (isNaN(parsedPriority) || parsedPriority < 0 || parsedPriority > 2)
+  ) {
+    return res.status(400).json({
+      msg: "The priority should be one of three options(high, medium, low)",
+    });
+  }
+
+  Mission.findOne({ _id: id })
+    .then((missionToUpdate) => {
+      if (missionToUpdate.user.toString() != req._id) {
+        return res.status(400).json({ msg: "Access Denied" });
+      }
+      let newTitle = missionToUpdate.title;
+      if (!isEmpty(title)) {
+        newTitle = title;
+      }
+      let newDetail = missionToUpdate.detail;
+      if (!isEmpty(detail)) {
+        newDetail = detail;
+      }
+      let newLink = missionToUpdate.link;
+      if (!isEmpty(link)) {
+        newLink = link;
+      }
+      let newPriority = missionToUpdate.priority;
+      if (!isEmpty(priority)) {
+        newPriority = priority;
+      }
+      missionToUpdate._doc = {
+        ...missionToUpdate._doc,
+        title: newTitle,
+        detail: newDetail,
+        link: newLink,
+        priority: newPriority,
+        dateUpdated: new Date(),
+      };
+
+      missionToUpdate.markModified("title");
+      missionToUpdate.markModified("detail");
+      missionToUpdate.markModified("link");
+      missionToUpdate.markModified("priority");
+      missionToUpdate.markModified("dateUpdated");
+
+      missionToUpdate
+        .save()
+        .then((newOne) => {
+          return res.status(200).json({ mission: newOne });
+        })
+        .catch((err) => {
+          return res.status(400).json({
+            msg: err,
+          });
+        });
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        msg: err,
+      });
+    });
+};
+
+const deleteMission = async (req, res) => {
+  const { id } = req.params;
+
+  Mission.findById(id)
+    .then((missionToDelete) => {
+      if (isEmpty(missionToDelete)) {
+        return res.status(404).json({
+          msg: "No mission found",
+        });
+      }
+      if (missionToDelete.user.toString() != req._id) {
+        return res.status(400).json({ msg: "Access Denied" });
+      }
+
+      missionToDelete
+        .deleteOne()
+        .then((deleted) => {
+          return res.status(200).json({
+            mission: missionToDelete,
+            msg: "deleted successfully",
+          });
+        })
+        .catch((err) => {
+          return res.status(400).json({
+            msg: err,
+          });
+        });
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        msg: err,
+      });
+    });
+};
+
+const checkMissions = async (req, res) => {
+  const { coordinates } = req.body;
+  let currentDate = new Date();
+  let fiveMinutesAgo = new Date(currentDate);
+  fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+
+  let thirtyMinutesLater = new Date(currentDate);
+  thirtyMinutesLater.setMinutes(thirtyMinutesLater.getMinutes() + 30);
+
+  const userId = req._id;
+  const user = await User.findById(userId);
+
+  await Mission.updateMany(
+    { user: userId, completed: false, dateDue: { $lte: fiveMinutesAgo } },
+    { completed: true, success: false }
+  );
+
+  const missions = await Mission.find({
+    user: userId,
+    completed: false,
+    dateDue: { $gte: thirtyMinutesLater },
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: coordinates,
+        },
+        $maxDistance: 500,
+      },
+    },
+  });
+
+  let total = 0;
+  for (let mission of missions) {
+    mission.success = true;
+    mission.completed = true;
+    total += mission.amount;
+    await mission.save();
+  }
+  user.balance += total;
+  await user.save();
+
+  res.status(200).json({ msg: "updated missions" });
+};
+
+export {
+  createMission,
+  getMissions,
+  editMission,
+  deleteMission,
+  checkMissions,
+};
+// ./routes/user.js
+const express = require("express");
+const userRouter = express.Router();
+const userControllers = require("../controllers/user");
+
+const path = require("path");
+
+// authentication middleware
+const authMiddleware = require(path.join(__dirname, "../utils/auth.js"));
+
+userRouter.post("/register", userControllers.registerUser);
+userRouter.post("/login", userControllers.loginUser);
+userRouter.get("/balance", authMiddleware, userControllers.getBalance);
+
+module.exports = userRouter;// ./routes/mission.js
+import express from "express";
+import missionControllers from "../controllers/mission";
+const pledgeRouter = express.Router();
+import authMiddleware from "../utils/auth";
+
+pledgeRouter.post("/", authMiddleware, missionControllers.createPledge);
+pledgeRouter.get("/", authMiddleware, missionControllers.getPledges);
+pledgeRouter.put("/:id", authMiddleware, missionControllers.editPledge);
+pledgeRouter.delete("/:id", authMiddleware, missionControllers.deletePledge);
+pledgeRouter.post("/check", authMiddleware, missionControllers.checkPledges);
+
+export default pledgeRouter;// ./app.js
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import "express-async-errors";
+import dotenv from "dotenv";
+import { unkownEndpoint, errorHandler } from "./utils/middleware.js";
+import missionRouter from "./routes/mission.js";
+import userRouter from "./routes/user.js";
+
+dotenv.config();
+
+const app = express();
+
+// Database connection
+const db_url = process.env.MONGODB_URI;
+mongoose.connect(db_url, { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+  console.log("Database connected");
+});
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("dist"));
+
+// Routes
+app.use("/mission", missionRouter);
+app.use("/user", userRouter);
+
+// Error handling middleware
+app.use(unkownEndpoint);
+app.use(errorHandler);
+
+export default app;
