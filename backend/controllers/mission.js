@@ -1,6 +1,6 @@
 // ./controllers/mission.js
 import Mission from "../models/mission.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import isEmpty from "../utils/isEmpty.js";
 
 const createMission = async (req, res) => {

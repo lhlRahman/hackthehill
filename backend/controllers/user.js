@@ -1,7 +1,7 @@
 // ./controllers/user.js
 import isEmpty from "../utils/isEmpty.js";
 import { issueJWT } from "../utils/password.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 
 const registerUser = async (req, res) => {
   let { username, password } = req.body;
