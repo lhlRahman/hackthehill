@@ -16,13 +16,13 @@ export default function Modal({show, onClose, setMission, mission, setTokens, to
         console.log("submitted");
         const active = true;
         let title = e.target.title.value;
-        let description = e.target.description.value;
+        let datetime = e.target.datetime.value;
         let location = address || null;
         
         
-        if (title && description && location){
+        if (title && datetime && location){
             setTokens(tokens+1);
-            setMission({title, description, location, active});
+            setMission({title, datetime, location, active});
             onClose();
         }
     }
@@ -43,12 +43,11 @@ export default function Modal({show, onClose, setMission, mission, setTokens, to
                         name="title"
                         placeholder="Title"
                     />
-                    <input
-                        className="bg-white text-gray-500"
-                        id="description"
-                        name="description"
-                        placeholder="Description"
-                    />
+                      <input className="bg-white text-gray-500"
+                        id="datetime"
+                        name="datetime"
+                        type="datetime-local"
+                      />
                     <div className={`${styles.locationWrapper} ${styles.box}`}>
                         <AutoCompleteInput
                             setCoordinates={setCoordinates}
