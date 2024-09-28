@@ -75,6 +75,41 @@ const loginUser = async (req, res) => {
     });
 };
 
+const getFriends = async (req, res) => {
+  User.findOne({ _id: req.id})
+    .then((user) => {
+      if (isEmpty(user)) {
+        return res.status(401).json({ msg: "Authentication failed" });
+      }
+      return res.status(200).json({ balance: user.friends });
+    })
+    .catch((err) => {
+      return res.status(400).json({ error: err });
+    });
+};
+
+const addFriend = async (req, res) => {
+
+  User.findOne({ _id: req.id})
+  .then((user) => {
+    if (isEmpty(user)) {
+      return res.status(401).json({ msg: "Authentication failed" });
+    }
+
+    if(user.friends.includes(friendId)) {
+      return res.status(400).json({ msg: "User is already a friend"});
+    }
+    
+    user.friends.push(friendId)
+    user.save()
+
+    return res.status(200).json({ msg: "Friend added successfully" });
+  })
+  .catch((err) => {
+    return res.status(400).json({ error: err });
+  });
+}
+
 const getBalance = async (req, res) => {
   User.findOne({ _id: req._id })
     .then((user) => {
@@ -88,4 +123,4 @@ const getBalance = async (req, res) => {
     });
 };
 
-export { registerUser, loginUser, getBalance };
+export { registerUser, loginUser, getFriends, addFriend, getBalance };

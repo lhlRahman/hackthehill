@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { motion } from "framer-motion"
+import {setUser} from "../components/user-context.js"
 
 export default function Component() {
   const [inputs, setInputs] = useState({
@@ -32,9 +33,10 @@ export default function Component() {
         throw new Error("Network response was not ok")
       }
 
+      setUser({ token: data.token, username: username, points: data.points, friends: data.friends });
       const data = await response.json()
       localStorage.setItem("token", data.token)
-      window.location.replace("/home")
+      window.location.replace("home")
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error)
     }
@@ -119,23 +121,17 @@ export default function Component() {
 
 const Logo = () => {
   return (
-    <svg
+    <img
       width="50"
-      height="39"
+      height="50"
       viewBox="0 0 50 39"
       fill="none"
+      src="/logo.png"
       xmlns="http://www.w3.org/2000/svg"
       className="absolute left-[50%] top-4 -translate-x-[50%] fill-slate-950 md:left-4 md:-translate-x-0"
+    
     >
-      <path
-        d="M16.4992 2H37.5808L22.0816 24.9729H1L16.4992 2Z"
-        stopColor="#000000"
-      ></path>
-      <path
-        d="M17.4224 27.102L11.4192 36H33.5008L49 13.0271H32.7024L23.2064 27.102H17.4224Z"
-        stopColor="#000000"
-      ></path>
-    </svg>
+    </img>
   )
 }
 
