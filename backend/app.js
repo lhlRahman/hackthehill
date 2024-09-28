@@ -37,10 +37,36 @@ app.use(express.static("dist"));
 app.use("/mission", missionRouter);
 app.use("/user", userRouter);
 
+app.get("/health", (req, res, next) => {
+    res.sendStatus(200);
+
+    console.log("sent request to myself");    
+});
+
 // Error handling middleware
 app.use(unknownEndpoint);
 app.use(errorHandler);
 
 startServer();
+
+function makeRequest() {
+    https.get('https://hackthehill.onrender.com/health', (resp) => {
+        let data = '';
+
+        resp.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        resp.on('end', () => {
+            console.log("sent request to myself");
+        });
+
+    }).on("error", (err) => {
+        console.log("Error: " + err.message);
+    });
+}
+
+// Request every 15 mins
+setInterval(makeRequest, 15 * 20 * 1000);
 
 export default app;
