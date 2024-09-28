@@ -1,0 +1,32 @@
+form {
+    background: var(--ter-blue);
+    border-radius: 50px;
+    max-width: 700px;
+}
+
+label {
+    font-weight: 600;
+}
+
+input[type=text], input[type=password] {
+    width: 100%;
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 400;
+    color: black;
+    margin-top: 0.2rem;
+}
+
+input[type=submit] {
+    color: var(--ter-blue);
+    background: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    outline: solid 0.15rem rgba(255, 255, 255, 0.8);
+    outline-offset: 0.15rem;
+    transition: cubic-bezier(0.075, 0.82, 0.165, 1) 750ms;
+}
+
+input[type=submit]:hover {
+    outline: solid 0.15rem rgba(255, 255, 255, 0);
+    padding: 0.4rem;
+}
