@@ -3,18 +3,15 @@ import React, { useState } from 'react';
 import Modal from './Modal.js'
 
 
-export default function AddMission() {
+export default function AddMission( { setMission} ) {
 
+    const [state, setState] = useState(false);
 
-   const [state, setState] = useState(false);
+    const openModal = () => {
+            setState(true);
+    }
 
-   const openModal = () => {
-        setState(true);
-   }
-
-   const closeModal = () => setState(false);
-
-    // closeModal();
+    const closeModal = () => setState(false);
 
 
     return (
@@ -22,7 +19,7 @@ export default function AddMission() {
         <div >
             <button className="bg-gray-500 font-bold" onClick={openModal}>Start Mission</button>
             
-            <Modal show={state} onClose={closeModal} />
+            <Modal show={state} onClose={closeModal} setMission={setMission} />
         </div>
 
     )
