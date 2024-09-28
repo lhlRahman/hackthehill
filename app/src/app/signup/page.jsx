@@ -3,11 +3,13 @@
 import React, { useState } from "react"
 import { motion } from "framer-motion"
 
-export default function Component() {
+export default function Signup() {
   const [inputs, setInputs] = useState({
     username: "",
     password: "",
+    retypePassword: "",
   })
+  const [errorMessage, setErrorMessage] = useState("")
 
   const onChange = (e) => {
     setInputs({ ...inputs, [e.target.name]: e.target.value })
@@ -16,8 +18,13 @@ export default function Component() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
+    if (inputs.password !== inputs.retypePassword) {
+      setErrorMessage("Passwords do not match!")
+      return
+    }
+
     try {
-      const response = await fetch("https://hackthehill.onrender.com/user/login", {
+      const response = await fetch("https://hackthehill.onrender.com/user/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +41,7 @@ export default function Component() {
 
       const data = await response.json()
       localStorage.setItem("token", data.token)
-      window.location.replace("/home")
+      window.location.replace("/")
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error)
     }
@@ -57,8 +64,17 @@ export default function Component() {
             variants={primaryVariants}
             className="mb-2 text-center text-4xl font-semibold text-black"
           >
-            Sign in to your account
+            Create Your Account
           </motion.h1>
+          <motion.p variants={primaryVariants} className="mb-8 text-center text-black">
+            Start your journey today and improve yourself step by step.
+          </motion.p>
+
+          {errorMessage && (
+            <motion.p className="mb-4 text-center text-red-600">
+              {errorMessage}
+            </motion.p>
+          )}
 
           <form onSubmit={onSubmit} className="w-full">
             <motion.div variants={primaryVariants} className="mb-2 w-full">
@@ -80,7 +96,7 @@ export default function Component() {
               />
             </motion.div>
 
-            <motion.div variants={primaryVariants} className="mb-4 w-full">
+            <motion.div variants={primaryVariants} className="mb-2 w-full">
               <label
                 htmlFor="password-input"
                 className="mb-1 inline-block text-sm font-medium text-black"
@@ -99,6 +115,25 @@ export default function Component() {
               />
             </motion.div>
 
+            <motion.div variants={primaryVariants} className="mb-4 w-full">
+              <label
+                htmlFor="retype-password-input"
+                className="mb-1 inline-block text-sm font-medium text-black"
+              >
+                Re-type Password
+              </label>
+              <input
+                id="retype-password-input"
+                type="password"
+                name="retypePassword"
+                value={inputs.retypePassword}
+                onChange={onChange}
+                placeholder="Re-type your password"
+                className="w-full rounded border-[1px] border-slate-300 px-2.5 py-1.5 focus:outline-indigo-600 text-black"
+                required
+              />
+            </motion.div>
+
             <motion.button
               variants={primaryVariants}
               whileTap={{
@@ -107,7 +142,7 @@ export default function Component() {
               type="submit"
               className="mb-1.5 w-full rounded bg-indigo-600 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-indigo-700"
             >
-              Sign In
+              Sign Up
             </motion.button>
           </form>
         </div>
@@ -155,12 +190,13 @@ const SupplementalContent = () => {
     <div className="group sticky top-4 m-4 h-80 overflow-hidden rounded-3xl rounded-tl-[4rem] bg-slate-950 md:h-[calc(100vh_-_2rem)]">
       <motion.div className="absolute inset-0 flex flex-col items-start justify-end bg-gradient-to-t from-slate-950/90 to-slate-950/0 p-8">
         <motion.h2 className="mb-2 text-3xl font-semibold leading-[1.25] text-white lg:text-4xl">
-          Unlock Your Full Potential
+          Start Your Self-Improvement Journey
         </motion.h2>
-        <motion.p className="mb-6 max-w-md text-sm ">
-          Join a community focused on self-growth and start your journey today.
+        <motion.p className="mb-6 max-w-md text-sm text-slate-300">
+          Create an account and begin your path to becoming the best version of yourself.
         </motion.p>
       </motion.div>
     </div>
-  )
-}
+  );
+};
+
