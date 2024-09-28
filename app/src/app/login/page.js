@@ -34,7 +34,7 @@ export default function Component() {
 
       const data = await response.json()
       localStorage.setItem("token", data.token)
-      window.location.replace("/")
+      window.location.replace("/home")
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error)
     }
