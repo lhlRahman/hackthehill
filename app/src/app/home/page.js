@@ -36,7 +36,8 @@ function Dashboard({ missions }) {
 }
 
 export default function Home() {
-  const { username, balance, allMissions, setBalance, id } = useAppStatesContext()
+  const { username, balance, allMissions, setBalance, id, pet } = useAppStatesContext()
+  console.log("Home context values:", { username, balance, allMissions, id, pet })
 
   useEffect(() => {
     console.log("Context values in Home:", { username, balance, allMissions })
@@ -86,7 +87,7 @@ export default function Home() {
 
         <div className="text-black border-black box-border p-2 border-4 w-full">
           Tokens: {balance}
-          <PetViewer visible={visible}/>
+          <PetViewer visible={visible} petUrl={pet}/>
           <StreetViewMap visible={!visible} destination={mission.coords}/>
         </div>
 
