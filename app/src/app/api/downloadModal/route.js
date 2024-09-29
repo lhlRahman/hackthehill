@@ -1,4 +1,4 @@
-// src/app/api/downloadModal/downloadModal.js
+// src/app/api/downloadModal/route.js
 import fs from 'fs'
 import path from 'path'
 import { pipeline } from 'stream'
@@ -7,16 +7,16 @@ import { promisify } from 'util'
 const streamPipeline = promisify(pipeline)
 
 export async function POST(req) {
-  const { url } = await req.json()
-
-  if (!url) {
-    return new Response(JSON.stringify({ error: 'URL parameter is required' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
-
   try {
+    const { url } = await req.json()
+
+    if (!url) {
+      return new Response(JSON.stringify({ error: 'URL parameter is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const response = await fetch(url)
     if (!response.ok) throw new Error(`unexpected response ${response.statusText}`)
 
@@ -25,9 +25,8 @@ export async function POST(req) {
       throw new Error(`Unexpected content type: ${contentType}`)
     }
 
-    const fileName = 'model.glb'
-    // Update the file path to use the correct directory
-    const filePath = path.join(process.cwd(), 'public', fileName)
+    const fileName = `model-${Date.now()}.glb`
+    const filePath = path.join(process.cwd(), 'public', 'models', fileName)
 
     // Ensure the directory exists
     const dir = path.dirname(filePath)
@@ -37,7 +36,7 @@ export async function POST(req) {
 
     await streamPipeline(response.body, fs.createWriteStream(filePath))
 
-    return new Response(JSON.stringify({ success: true, fileName }), {
+    return new Response(JSON.stringify({ success: true, fileName: `models/${fileName}` }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     })
