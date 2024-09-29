@@ -63,6 +63,8 @@ const loginUser = async (req, res) => {
           expiresIn: tokenObject.expires,
           user: {
             username: user.username,
+            balance: user.points,
+            friends: user.friends,
             _id: user._id,
           },
         });
@@ -123,4 +125,20 @@ const getBalance = async (req, res) => {
     });
 };
 
-export { registerUser, loginUser, getFriends, addFriend, getBalance };
+const updateBalance = async (req, res) => {
+  const { points, id } = req.body;
+  User.findOne({ _id: id })
+    .then((user) => {
+      if (isEmpty(user)) {
+        return res.status(401).json({ msg: "Authentication failed" });
+      }
+      user.points = points
+      user.save()
+      return res.status(200).json({ msg: "Balance updated successfully" });
+    })
+    .catch((err) => {
+      return res.status(400).json({ error: err });
+    });
+};
+
+export { registerUser, loginUser, getFriends, addFriend, getBalance, updateBalance };

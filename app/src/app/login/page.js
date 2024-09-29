@@ -2,8 +2,11 @@
 
 import React, { useState } from "react"
 import { motion } from "framer-motion"
+import { useAppStatesContext } from "../components/user-context.js"
 
 export default function Component() {
+  const { setUserId, username, setUserName, setAllFriends, setBalance  } = useAppStatesContext()
+
   const [inputs, setInputs] = useState({
     username: "",
     password: "",
@@ -33,6 +36,15 @@ export default function Component() {
       }
 
       const data = await response.json()
+
+      // Setting
+      setUserId(data.user._id);
+      setUserName(data.user.username);
+      setAllFriends(data.user.friends);
+      setBalance(data.user.balance);
+
+      console.log(username);
+
       localStorage.setItem("token", data.token)
       window.location.replace("home")
     } catch (error) {
@@ -146,7 +158,7 @@ const primaryVariants = {
 
 const SupplementalContent = () => {
   return (
-    <div className="group sticky top-4 m-4 h-80 overflow-hidden rounded-3xl rounded-tl-[4rem] bg-slate-950 md:h-[calc(100vh_-_2rem)]">
+    <div className="group sticky top-4 m-4 h-80 overflow-hidden rounded-3xl rounded-tl-[4rem] bg-gradient-to-r from-violet-600 to-indigo-600 md:h-[calc(100vh_-_2rem)]">
       <motion.div className="absolute inset-0 flex flex-col items-start justify-end bg-gradient-to-t from-slate-950/90 to-slate-950/0 p-8">
         <motion.h2 className="mb-2 text-3xl font-semibold leading-[1.25] text-white lg:text-4xl">
           Unlock Your Full Potential
