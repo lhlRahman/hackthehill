@@ -14,7 +14,7 @@ export default function Home() {
     console.log("Context values in Home:", { username, balance, allMissions })
   }, [username, balance, allMissions])
 
-  const basepos = [45.4233175, -75.6840229];
+  const basepos = [45.4224016, -75.6819462];
 
   const basetext = {
     active: false,
@@ -58,7 +58,7 @@ export default function Home() {
         <div className="text-black border-black box-border p-2 border-4 w-full">
           Tokens: {balance}
           <PetViewer visible={visible}/>
-          <StreetViewMap visible={!visible} destination={mission.coords}/>
+          <StreetViewMap visible={!visible} destination={mission.coords} setVisible={setVisible} />
         </div>
 
               <div>
