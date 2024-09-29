@@ -24,6 +24,7 @@ const registerUser = async (req, res) => {
       password: password,
       points: 0,
       friends: [],
+      pet: ""
     });
 
     newUser
@@ -66,6 +67,7 @@ const loginUser = async (req, res) => {
             balance: user.points,
             friends: user.friends,
             _id: user._id,
+            pet: user.pet
           },
         });
       } else {
@@ -141,4 +143,24 @@ const updateBalance = async (req, res) => {
     });
 };
 
-export { registerUser, loginUser, getFriends, addFriend, getBalance, updateBalance };
+const updateUser = async (req, res) => {
+  const { id, url } = req.body;
+  console.log('url', url)
+  console.log('id', id)
+
+  console.log(id, url)
+  User.findOne({ _id: id })
+    .then((user) => {
+      if (isEmpty(user)) {
+        return res.status(401).json({ msg: "Authentication failed" });
+      }
+      user.pet = url
+      user.save()
+      return res.status(200).json({ msg: "Username updated successfully" });
+    })
+    .catch((err) => {
+      return res.status(400).json({ error: err });
+    });
+};
+
+export { registerUser, loginUser, getFriends, addFriend, getBalance, updateBalance, updateUser };

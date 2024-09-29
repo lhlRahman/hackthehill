@@ -1,42 +1,119 @@
 'use client'
 import styles from '../styles/Modal.module.scss';
 import AutoCompleteInput from './autoCompleteInput.js';
-import { useState } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const SpringButton = ({setTokens, setMission, tokens}) => {
+const SpringButton = ({setTokens, setMission, tokens, id}) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
-      <div className="place-content-center">
+      <div className="place-content-center mr-52">
         <button
           onClick={() => setIsOpen(true)}
           className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium px-4 py-2 rounded hover:opacity-90 transition-opacity"
         >
           Start Mission
         </button>
-        <SpringModal isOpen={isOpen} setIsOpen={setIsOpen} setMission={setMission} setTokens={setTokens} tokens={tokens} />
+        <SpringModal isOpen={isOpen} setIsOpen={setIsOpen} setMission={setMission} setTokens={setTokens} tokens={tokens} id={id}/>
       </div>
     );
   };
 
-const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens }) => {
+const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens, id }) => {
     const [coordinates, setCoordinates] = useState([]);
     const [address, setAddress] = useState("");
 
-    const handleSubmit = (e) => {
+    const [inputs, setInputs] = useState({
+        title: "",
+        detail: "",
+        amount: 0,
+        location: { name: "", type: "Point", coordinates: "" },
+        dateDue: "",
+        link: "",
+        priority: 0,
+        _id: id,
+      })
+
+      const onChange = useCallback((e) => {
+        setInputs(prev => ({ ...prev, [e.target.name]: e.target.value }))
+      }, [])
+
+      useEffect(() => {
+        setInputs(prev => ({
+            ...prev,
+            location: {
+                ...prev.location,
+                name: address,    
+                coordinates: coordinates
+                }
+        }));
+    }, [address, coordinates]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
     
         console.log("submitted");
         const active = true;
-        let title = e.target.title.value;
-        let datetime = e.target.datetime.value;
-        let location = address || null;
-        let coords = coordinates;
+
+        console.log(inputs.title);
+        console.log(address);
+        console.log(inputs.dateDue);
         
-        
-        if (title && datetime && location){
+
+        if (inputs.title && inputs.dateDue && address){
+            console.log("proceeded");
+
             setTokens(tokens+1);
-            setMission({title, datetime, location, coords});
+            setMission({title: inputs.title, dateDue: inputs.dateDue, location: address});
+
+            console.log(JSON.stringify(inputs))
+
+            try {
+                const response = await fetch("http://localhost:3001/mission", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `${localStorage.getItem("token")}`
+                    },
+                    body: JSON.stringify(inputs),
+                  });
+            
+                  if (!response.ok) {
+                    throw new Error(response.statusText)
+                  }
+
+                  try {
+                    const content = {
+                        points: tokens + 1,
+                        id: id
+                    }
+
+                    const response = await fetch("http://localhost:3001/user/updatepoints", {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `${localStorage.getItem("token")}`
+                        },
+                        body: JSON.stringify(content),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(response.statusText)
+                      }
+    
+                      const data = await response.json()
+                }
+                catch (error) {
+                    setError("There was a problem with the login operation.")
+                    console.error("There was a problem with the fetch operation:", error)
+                }
+
+                  const data = await response.json()
+            } catch (error) {
+                setError("There was a problem with the login operation.")
+                console.error("There was a problem with the fetch operation:", error)
+            }
+
         }
 
     }
@@ -65,18 +142,24 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens }) => {
                             className="bg-white text-black p-1 rounded"
                             id="title"
                             name="title"
+                            value={inputs.title}
+                            onChange={onChange}
                             placeholder="Title"
                         />
                         <input
                             className="bg-white text-black p-1 rounded"
                             id="datetime"
-                            name="datetime"
+                            name="dateDue"
                             type="datetime-local"
+                            value={inputs.dateDue}
+                            onChange={onChange}
                         />
                         <div className={`mt-4 mb-3 text-black ${styles.locationWrapper} ${styles.box}`}>
                             <AutoCompleteInput
                                 setCoordinates={setCoordinates}
                                 setAddress={setAddress}
+                                value={address}
+                                onChange={onChange}
                             />
                         </div>
                         <button

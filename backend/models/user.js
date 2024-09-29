@@ -22,6 +22,10 @@ const UserSchema = new Schema({
     type: Array,
     default: [],
   },
+  pet: {
+    type: String,
+    default: "",
+  }
 });
 
 const User = model("User", UserSchema);

@@ -10,6 +10,7 @@ export function AppStates({ children }) {
   const [id, setId] = useState(0);
   const [username, setUsername] = useState('');
   const [balance, setBalance] = useState(0);
+  const [pet, setPet] = useState('');
 
   useEffect(() => {
     console.log("AppStates context updated:", { username, balance, id, allFriends, allMissions })
@@ -22,6 +23,7 @@ export function AppStates({ children }) {
     id, setId,
     username, setUsername,
     balance, setBalance,
+    pet, setPet
   };
 
   return (
