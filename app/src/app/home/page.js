@@ -34,6 +34,29 @@ function Dashboard({ missions }) {
   );
 }
 
+const missionCheck = async () => {
+  try {
+    const response = await fetch("http://localhost:3001/mission/check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(inputs),
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText)
+      }
+      const data = response.json()
+      console.log(data);
+            } catch (error) {
+                setError("There was a problem with the login operation.")
+                console.error("There was a problem with the fetch operation:", error)
+            }
+      
+}
+
 export default function Home() {
   const { username, balance, allMissions, setBalance, id, pet } = useAppStatesContext()
   console.log("Home context values:", { username, balance, allMissions, id, pet })
@@ -91,6 +114,10 @@ export default function Home() {
 
               <div>
                 <button className="bg-black min-w-full" onClick={()=> {setVisible(!visible)}}>{visible ? "Switch to Map" : "Switch to Pet"}</button>
+              </div>
+
+              <div>
+                <button className="bg-black min-w-full mt-2" onClick={()=>missionCheck()}>Check Missions</button>
               </div>
           </div>
       </div>
