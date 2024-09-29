@@ -44,7 +44,7 @@ export default function Home() {
             <div className=" border-red-500 border-4 w-full h-40">Tokens: {tokens}</div>
 
               <div>
-                <EditMission setTokens={setTokens} tokens={tokens} mission={mission} setMission={setMission}></EditMission>
+                <EditMission setTokens={setTokens} tokens={tokens} active={mission.active} ></EditMission>
               </div>
           </div>
       </div>
