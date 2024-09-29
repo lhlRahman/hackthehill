@@ -5,7 +5,7 @@ import { PlaceholdersAndVanishInput } from "./ui/placeholders-and-vanish-input"
 import { ErrorBoundary } from 'react-error-boundary'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, useGLTF } from '@react-three/drei'
-import { useAppStatesContext } from "../../contexts/user-context"
+import { useAppStates } from "../../contexts/user-context"
 function Model({ url }) {
   console.log(`Model component: Loading model from URL: ${url}`)
   const { scene } = useGLTF(url)
@@ -113,7 +113,7 @@ export default function PetViewer( visible, petUrl ) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState(null)
   const [taskId, setTaskId] = useState(null)
-  const { id } = useAppStatesContext();
+  const { id } = useAppStates();
   
   console.log("id dkwa;skd;l" + id)
 
