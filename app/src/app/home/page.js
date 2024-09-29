@@ -14,13 +14,13 @@ export default function Home() {
     console.log("Context values in Home:", { username, balance, allMissions })
   }, [username, balance, allMissions])
 
-  const basepos = [45.420480, -75.681280]
+  const basepos = [45.4233175, -75.6840229];
 
   const basetext = {
     active: false,
     title: "Add a new Mission!",
     datetime: Date(),
-    location: "a place",
+    location: "100 Louis-Pasteur Private",
     coords: basepos
   } 
 

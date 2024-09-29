@@ -31,11 +31,12 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens }) => {
         let title = e.target.title.value;
         let datetime = e.target.datetime.value;
         let location = address || null;
+        let coords = coordinates;
         
         
         if (title && datetime && location){
             setTokens(tokens+1);
-            setMission({title, description, location});
+            setMission({title, datetime, location, coords});
         }
 
     }
