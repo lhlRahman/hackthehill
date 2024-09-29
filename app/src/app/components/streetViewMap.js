@@ -9,7 +9,6 @@ const icon = L.icon({ iconUrl: "/images/marker-icon.png" });
 
 export default function StreetViewMap({ visible, destination }) {
   const [userPos, setUserPos] = useState(null);       // Stores user's position
-  const [destinationPos, setDestinationPos] = useState(null); // Stores destination position
 
   // Geolocation function to update user position
   const getCurrentLocation = () => {
@@ -36,20 +35,6 @@ export default function StreetViewMap({ visible, destination }) {
     return () => clearInterval(intervalId); // Clean up on unmount
   }, []);
 
-  // Convert destination address to coordinates if provided
-  useEffect(() => {
-    if (destination) {
-      fromAddress(destination)
-        .then(({ results }) => {
-          if (results.length > 0) {
-            // Extract lat and lng from the response and update state
-            const { lat, lng } = results[0].geometry.location;
-            setDestinationPos([lat, lng]); // Set the destination coordinates
-          }
-        })
-        .catch(console.error);
-    }
-  }, [destination]);
 
   // If the map is not visible, return null
   if (!visible) return null;
@@ -69,8 +54,8 @@ export default function StreetViewMap({ visible, destination }) {
           </Marker>
 
           {/* Destination marker if destination coordinates exist */}
-          {destinationPos && (
-            <Marker position={destinationPos} icon={icon}>
+          {destination && (
+            <Marker position={destination} icon={icon}>
               <Popup>Destination</Popup>
             </Marker>
           )}

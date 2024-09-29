@@ -5,6 +5,7 @@ import SpringButton from '../components/Modal.js'
 import EditMission from '../components/editMission.js'
 import { useAppStatesContext } from '../../contexts/user-context.js'
 import PetViewer from "../components/PetViewer.js"
+import StreetViewMap from "../components/streetViewMap";
 
 export default function Home() {
   const { username, balance, allMissions, setBalance } = useAppStatesContext()
@@ -19,9 +20,11 @@ export default function Home() {
     active: false,
     title: "Add a new Mission!",
     datetime: Date(),
-    location: "a place"
+    location: "a place",
+    coords: basepos
   } 
 
+  const [visible, setVisible] = useState(true);
   const [mission, setMission] = useState(basetext)
 
   useEffect(() => {
@@ -54,7 +57,8 @@ export default function Home() {
 
         <div className="text-black border-black box-border p-2 border-4 w-full">
           Tokens: {balance}
-          <PetViewer />
+          <PetViewer visible={visible}/>
+          <StreetViewMap visible={!visible} destination={mission.coords}/>
         </div>
 
               <div>
