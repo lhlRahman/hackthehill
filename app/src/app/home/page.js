@@ -15,24 +15,29 @@ export default function Home() {
   }
 
   const [mission, setMission] = useState(basetext);
-  const { username } = useAppStatesContext();
+  const { username, balance } = useAppStatesContext();
   const [tokens, setTokens] = useState(0);
 
     return (
         <div className="bg-slate-50 min-h-screen pb-10">
           <div className="flex justify-between ml-52 mr-52 pt-8 h-full">
-            <h1 className='text-black text-4xl font-black'>Paw_sitivity</h1>
+            <Title />
             <SpringButton setTokens={setTokens} tokens={tokens} setMission={setMission} />
             </div>
 
             <div className="flex flex-col center-items ml-64 mr-64 mt-8">
-            <div className='flex flex-col my-6'>
+            <div className='flex flex-col my-4'>
                 <span className="text-black px-2 m-0 text-xs font-black">CURRENT BALANCE</span>
-                <span className="text-black px-2 pb-2 text-lg">{username}</span>
+                <span className="text-black px-2 pb-2 text-lg">{balance}</span>
               </div>
 
-              <div className='flex flex-col my-6'>
+              <div className='flex flex-col my-4'>
                 <span className="text-black px-2 m-0 text-xs font-black">CURRENT MISSION</span>
+                <span className="text-black px-2 pb-2 text-lg">{mission.title}</span>
+              </div>
+
+              <div className='flex flex-col my-4'>
+                <span className="text-black px-2 m-0 text-xs font-black">ASSIGNED LOCATION</span>
                 <span className="text-black px-2 pb-2 text-lg">{mission.location}</span>
               </div>
 
@@ -46,5 +51,23 @@ export default function Home() {
                 </div>
             </div>
         </div>
+    );
+  }
+  function Title() {
+    return (
+      <div className="flex flex-row">
+        <span className='text-black text-4xl font-black'>Paw</span>
+        <img
+          width="40"
+          height="40"
+          viewBox="0 0 50 39"
+          fill="none"
+          src="/logo.png"
+          xmlns="http://www.w3.org/2000/svg"        
+        >
+        </img>
+        <span className='text-black text-4xl font-black'>sitivity</span>
+      </div>
+
     );
   }

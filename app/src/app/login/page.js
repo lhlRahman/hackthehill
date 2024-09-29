@@ -46,7 +46,6 @@ export default function Component() {
       console.log(username);
 
       localStorage.setItem("token", data.token)
-      window.location.replace("home")
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error)
     }
