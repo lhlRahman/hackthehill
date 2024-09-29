@@ -1,55 +1,78 @@
-"use client"
+'use client'
 
-import React, { useState } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useAppStatesContext } from "../components/user-context.js"
+import { useAppStatesContext } from "../../contexts/user-context.js"
+import { AlertCircle } from 'lucide-react'
 
-export default function Component() {
-  const { setUserId, username, setUserName, setAllFriends, setBalance  } = useAppStatesContext()
+export default function LoginForm() {
+  const { setBalance, setUsername, setId, setAllFriends } = useAppStatesContext()
 
   const [inputs, setInputs] = useState({
     username: "",
     password: "",
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const onChange = (e) => {
-    setInputs({ ...inputs, [e.target.name]: e.target.value })
-  }
+  const onChange = useCallback((e) => {
+    setInputs(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }, [])
 
-  const onSubmit = async (e) => {
+  const onSubmit = useCallback(async (e) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError("")
 
     try {
-      const response = await fetch("https://hackthehill.onrender.com/user/login", {
+      const response = await fetch("http://localhost:3001/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          username: inputs.username,
-          password: inputs.password,
-        }),
+        body: JSON.stringify(inputs),
       })
 
       if (!response.ok) {
-        throw new Error("Network response was not ok")
+        throw new Error(response.statusText)
       }
 
       const data = await response.json()
+      console.log(data.user)
 
-      // Setting
-      setUserId(data.user._id);
-      setUserName(data.user.username);
-      setAllFriends(data.user.friends);
-      setBalance(data.user.balance);
-
-      console.log(username);
-
+      // Update context state
+      setBalance(data.user.balance)
+      setUsername(data.user.username)
+      setId(data.user.id)
+      setAllFriends(data.user.friends)
+      
+      // Log the updated values from the context
+      console.log("Updated context values:", {
+        balance: data.user.balance,
+        username: data.user.username,
+        id: data.user.id,
+        allFriends: data.user.friends
+      })
+      
+      // Store token in local storage
       localStorage.setItem("token", data.token)
+<<<<<<< HEAD
+=======
+
+      // go to /home
+
+      window.location.replace("/home")
+      // Redirect to home page
+      // router.push("/log")
+>>>>>>> 6ff1b29876a299fa7b5e665e821fdd2db31608f7
     } catch (error) {
+      setError("There was a problem with the login operation.")
       console.error("There was a problem with the fetch operation:", error)
+    } finally {
+    
+      setIsLoading(false)
     }
-  }
+  }, [inputs, setBalance, setUsername, setId, setAllFriends])
 
   return (
     <section className="grid min-h-screen grid-cols-1 bg-slate-50 md:grid-cols-[1fr,_400px] lg:grid-cols-[1fr,_600px]">
@@ -117,9 +140,17 @@ export default function Component() {
               }}
               type="submit"
               className="mb-1.5 w-full rounded bg-indigo-600 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-indigo-700"
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
             </motion.button>
+
+            {error && (
+              <motion.div variants={primaryVariants} className="mt-2 text-red-600">
+                <AlertCircle className="inline-block mr-2" />
+                {error}
+              </motion.div>
+            )}
           </form>
         </div>
       </motion.div>
@@ -138,9 +169,7 @@ const Logo = () => {
       src="/logo.png"
       xmlns="http://www.w3.org/2000/svg"
       className="absolute left-[50%] top-4 -translate-x-[50%] fill-slate-950 md:left-4 md:-translate-x-0"
-    
-    >
-    </img>
+    />
   )
 }
 
