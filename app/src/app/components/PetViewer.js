@@ -107,9 +107,9 @@ function ModelViewer({ modelUrl }) {
   )
 }
 
-export default function PetViewer( {visible} ) {
+export default function PetViewer( visible, petUrl ) {
   const [prompt, setPrompt] = useState('')
-  const [modelUrl, setModelUrl] = useState('https://assets.meshy.ai/b2e42015-d3d8-42b0-89d7-d8dbc433ff6e/tasks/01923c44-6037-7ac1-8e65-6badc923ce37/output/model.glb?Expires=4881168000&Signature=gedU~WJ~7M7BGjhyDUGAuZMlGYQ~1klfl1CyX8CU1CgHReM3cuBfdTKNiXuTk6bwDuXM8ihRW1G82v-zQTf0keTv5kCWkd-~u2GzJxhIOjH9LMZJCHNFnidk1cLuqIvyk~REGYlKRMgXEmpWuLmjf7X4c9xDtsBI-gYEiG-lRSFNq1DMo-TWEVfeNyvRz0Ca4xZ2oAJc9k3kRE4lBjogPnsdbXFWssmmHJA72pw4xDCB~MNP0i6rDDZUVJgb3o44~XmhQRVFuQJczgbyVv06uvsfpS-sfiWQ6iTMPkO3yMiVvaGT7WbXrqzrmV4faMb90X5YegAWA3OwSpGl3G4Xhg__&Key-Pair-Id=KL5I0C8H7HX83')
+  const [modelUrl, setModelUrl] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState(null)
   const [taskId, setTaskId] = useState(null)
@@ -235,41 +235,42 @@ export default function PetViewer( {visible} ) {
         clearInterval(pollingInterval)
       }
     }
-  }, [taskId])
+  }, [taskId, isGenerating, pollTaskStatus])
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">3D Pet Generator</h1>
-      <div className="mb-4">
-        <input
-          type="text"
-          value={prompt}
-          onChange={(e) => {
-            console.log(`PetViewer: Prompt changed to: ${e.target.value}`)
-            setPrompt(e.target.value)
-          }}
-          placeholder="Describe your pet (e.g., 'A cute blue cat')"
-          className="w-full p-2 border rounded"
-        />
-      </div>
-      <button
-        onClick={generateModel}
-        disabled={isGenerating || !prompt}
-        className="bg-blue-500 text-white p-2 rounded disabled:bg-gray-300"
-      >
-        {isGenerating ? 'Generating...' : 'Generate 3D Pet'}
-      </button>
       {error && (
         <p className="text-red-500 mt-2">Error: {error}</p>
       )}
-      {isGenerating && (
-        <p className="mt-2">Generating your 3D pet. This may take a few minutes...</p>
+      {!isGenerating && !modelUrl ? (
+        <div className="h-[40rem] flex flex-col justify-center items-center px-4">
+          <h2 className="mb-10 sm:mb-20 text-xl text-center sm:text-5xl dark:text-white text-black">
+            Choose Your Character!
+          </h2>
+          <PlaceholdersAndVanishInput 
+            placeholders={placeholders} 
+            onChange={(e) => setPrompt(e.target.value)} 
+            onSubmit={generateModel} 
+          />
+        </div>
+      ) : (
+        !modelUrl && 
+        <div className="h-[40rem] flex flex-col justify-center items-center px-4">
+          <h2 className="mb-10 sm:mb-20 text-xl text-center sm:text-5xl dark:text-white text-black">
+            Generating Your 3D Pet!
+          </h2>
+          <p className="mt-2">This may take a few minutes...</p>
+        </div>
       )}
       {modelUrl && (
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-2">Your 3D Pet</h2>
           <ModelViewer modelUrl={modelUrl} />
+          <button onClick={accept}>
+            Continue
+          </button>
         </div>
+        
       )}
     </div>
   )
