@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import SpringButton from '../components/Modal.js'
-import { useAppStatesContext } from '../../contexts/user-context.js'
+import EditMission from '../components/editMission.js'
+import { useAppStates } from '../../contexts/user-context.js'
 import PetViewer from "../components/PetViewer.js"
 import StreetViewMap from "../components/streetViewMap";
 
@@ -58,7 +59,7 @@ const missionCheck = async () => {
 }
 
 export default function Home() {
-  const { username, balance, allMissions, setBalance, id, pet } = useAppStatesContext()
+  const { username, balance, allMissions, setBalance, id, pet } = useAppStates()
   console.log("Home context values:", { username, balance, allMissions, id, pet })
 
   useEffect(() => {

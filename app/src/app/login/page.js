@@ -2,12 +2,12 @@
 
 import React, { useState, useCallback } from "react"
 import { motion } from "framer-motion"
-import { useAppStatesContext } from "../../contexts/user-context.js"
+import { useAppStates } from "../../contexts/user-context.js"
 import { AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginForm() {
-  const { setBalance, setUsername, setId, setAllFriends, setPet } = useAppStatesContext()
+  const { setBalance, setUsername, setId, setAllFriends, setPet } = useAppStates()
   const router = useRouter()
 
   const [inputs, setInputs] = useState({

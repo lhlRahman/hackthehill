@@ -1,38 +1,59 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from "react";
-const Context = createContext();
+import { useState, useEffect } from "react";
 
-export function AppStates({ children }) {
-  const [allMissions, setAllMissions] = useState([]);
-  const [allFriends, setAllFriends] = useState([]);
-  const [currentLocation, setCurrentLocation] = useState([]);
-  const [id, setId] = useState(0);
-  const [username, setUsername] = useState('');
-  const [balance, setBalance] = useState(0);
-  const [pet, setPet] = useState('');
+const initialState = {
+  allMissions: [],
+  allFriends: [],
+  currentLocation: [],
+  id: 0,
+  username: '',
+  balance: 0,
+  pet: '',
+};
 
-  useEffect(() => {
-    console.log("AppStates context updated:", { username, balance, id, allFriends, allMissions })
-  }, [username, balance, id, allFriends, allMissions])
-
-  const contextValue = {
-    allMissions, setAllMissions,
-    allFriends, setAllFriends,
-    currentLocation, setCurrentLocation,
-    id, setId,
-    username, setUsername,
-    balance, setBalance,
-    pet, setPet
-  };
-
-  return (
-    <Context.Provider value={contextValue}>
-      {children}
-    </Context.Provider>
-  );
+function getStateFromLocalStorage() {
+  if (typeof window === 'undefined') {
+    return initialState;
+  }
+  const storedState = localStorage.getItem('appState');
+  return storedState ? JSON.parse(storedState) : initialState;
 }
 
-export function useAppStatesContext() {
-  return useContext(Context);
+function setStateToLocalStorage(state) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('appState', JSON.stringify(state));
+  }
+}
+
+export function useAppStates() {
+  const [state, setState] = useState(getStateFromLocalStorage);
+
+  useEffect(() => {
+    setStateToLocalStorage(state);
+    console.log("AppStates updated:", state);
+  }, [state]);
+
+  const setAllMissions = (missions) => setState(prev => ({ ...prev, allMissions: missions }));
+  const setAllFriends = (friends) => setState(prev => ({ ...prev, allFriends: friends }));
+  const setCurrentLocation = (location) => setState(prev => ({ ...prev, currentLocation: location }));
+  const setId = (id) => setState(prev => ({ ...prev, id }));
+  const setUsername = (username) => setState(prev => ({ ...prev, username }));
+  const setBalance = (balance) => setState(prev => ({ ...prev, balance }));
+  const setPet = (pet) => setState(prev => ({ ...prev, pet }));
+
+  return {
+    ...state,
+    setPet,
+    setAllMissions,
+    setAllFriends,
+    setCurrentLocation,
+    setId,
+    setUsername,
+    setBalance,
+  };
+}
+
+export function AppStates({ children }) {
+  return <>{children}</>;
 }
