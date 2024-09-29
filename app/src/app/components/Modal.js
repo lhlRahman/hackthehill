@@ -23,6 +23,7 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens, id }) =
     const [coordinates, setCoordinates] = useState([]);
     const [address, setAddress] = useState("");
 
+
     const [inputs, setInputs] = useState({
         title: "",
         detail: "",
@@ -42,8 +43,8 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens, id }) =
         setInputs(prev => ({
             ...prev,
             location: {
-                ...prev.location,
-                name: address,    
+                name: address,   
+                type: "Point", 
                 coordinates: coordinates
                 }
         }));
@@ -104,13 +105,11 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens, id }) =
                       const data = await response.json()
                 }
                 catch (error) {
-                    setError("There was a problem with the login operation.")
                     console.error("There was a problem with the fetch operation:", error)
                 }
 
                   const data = await response.json()
             } catch (error) {
-                setError("There was a problem with the login operation.")
                 console.error("There was a problem with the fetch operation:", error)
             }
 

@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const apiKey = process.env.GOOGLE_API;
+const apiKey = "AIzaSyBMruvDOzY5KndAp-Ma9E90ZDQGou6SJtE";
 
 const loadGoogleMapsScript = (apiKey, callback) => {
   if (window.google) {

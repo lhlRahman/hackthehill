@@ -202,49 +202,68 @@ const deleteMission = async (req, res) => {
 };
 
 const checkMissions = async (req, res) => {
-  const { coordinates } = req.body;
-  const currentDate = new Date();
-  const fiveMinutesAgo = new Date(currentDate);
-  fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+  console.log("checkMissions function called");
+  try {
+    const { coordinates } = req.body;
+    const userId = req._id;
+    const currentDate = new Date();
 
-  const thirtyMinutesLater = new Date(currentDate);
-  thirtyMinutesLater.setMinutes(thirtyMinutesLater.getMinutes() + 30);
+    console.log(`Checking missions for user: ${userId}`);
+    console.log(`Current coordinates: ${JSON.stringify(coordinates)}`);
+    console.log(`Current date: ${currentDate}`);
 
-  const userId = req._id;
-  const user = await User.findById(userId);
-
-  await Mission.updateMany(
-    { user: userId, completed: false, dateDue: { $lte: fiveMinutesAgo } },
-    { completed: true, success: false }
-  );
-
-  const missions = await Mission.find({
-    user: userId,
-    completed: false,
-    dateDue: { $gte: thirtyMinutesLater },
-    location: {
-      $near: {
-        $geometry: {
-          type: "Point",
-          coordinates: coordinates,
+    // Find nearby missions that are due within the next 30 minutes
+    console.log("Searching for nearby missions...");
+    const nearbyMissions = await Mission.find({
+      user: userId,
+      completed: false,
+      dateDue: { $gte: currentDate, $lte: new Date(currentDate.getTime() + 30 * 60000) },
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: coordinates,
+          },
+          $maxDistance: 500, // 500 meters radius
         },
-        $maxDistance: 500,
       },
-    },
-  });
+    });
 
-  let total = 0;
-  for (let mission of missions) {
-    mission.success = true;
-    mission.completed = true;
-    total += mission.amount;
-    await mission.save();
+    console.log(`Found ${nearbyMissions.length} nearby missions`);
+    console.log("Nearby missions:", JSON.stringify(nearbyMissions, null, 2));
+
+    let pointsEarned = 0;
+    for (let mission of nearbyMissions) {
+      console.log(`Processing mission: ${mission._id}`);
+      mission.completed = true;
+      mission.success = true;
+      pointsEarned += 1;
+      await mission.save();
+      console.log(`Mission ${mission._id} marked as completed and successful`);
+    }
+
+    console.log(`Total points earned: ${pointsEarned}`);
+
+    // Mark overdue missions as failed
+    console.log("Marking overdue missions as failed...");
+    const overdueResult = await Mission.updateMany(
+      { user: userId, completed: false, dateDue: { $lt: currentDate } },
+      { completed: true, success: false }
+    );
+    console.log(`Marked ${overdueResult.nModified} overdue missions as failed`);
+
+    console.log("checkMissions completed successfully");
+    res.status(200).json({ 
+      msg: `Completed ${nearbyMissions.length} missions successfully.`,
+      pointsEarned
+    });
+  } catch (error) {
+    console.error("Error in checkMissions:", error);
+    console.error("Stack trace:", error.stack);
+    res.status(500).json({ msg: "An error occurred while checking missions." });
   }
-  user.points += total;
-  await user.save();
-
-  res.status(200).json({ msg: "Updated missions" });
 };
+
 
 export {
   createMission,

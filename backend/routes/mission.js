@@ -6,7 +6,7 @@ import authMiddleware from "../utils/auth.js";
 const missionRouter = express.Router();
 
 missionRouter.post("/", missionControllers.createMission);
-missionRouter.get("/",  missionControllers.getMissions);
+missionRouter.post("/getbyid",  missionControllers.getMissions);
 missionRouter.put("/:id",  missionControllers.editMission);
 missionRouter.delete("/:id" , missionControllers.deleteMission);
 missionRouter.post("/check", missionControllers.checkMissions);
