@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import SpringButton from '../components/Modal.js'
-import EditMission from '../components/editMission.js'
 import { useAppStatesContext } from '../../contexts/user-context.js'
 import PetViewer from "../components/PetViewer.js"
 import StreetViewMap from "../components/streetViewMap";
@@ -87,8 +86,7 @@ export default function Home() {
 
         <div className="text-black border-black box-border p-2 border-4 w-full">
           Tokens: {balance}
-          <PetViewer visible={visible} petUrl={pet}/>
-          <StreetViewMap visible={!visible} destination={mission.coords} setVisible={setVisible} />
+          {visible ? <PetViewer petUrl={pet}/> : <StreetViewMap visible={!visible} destination={mission.coords} setVisible={setVisible} />}
         </div>
 
               <div>

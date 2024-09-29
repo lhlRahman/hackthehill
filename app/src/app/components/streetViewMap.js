@@ -68,8 +68,6 @@ export default function StreetViewMap({ visible, setVisible, destination }) {
   }, [userPos, destination]); // Runs when either userPos or destination changes
 
   // If the map is not visible, return null
-  if (!visible) return null;
-
   return (
     <div>
       <p>Distance: {displacement.toFixed(2)} meters</p> {/* Display the displacement */}
