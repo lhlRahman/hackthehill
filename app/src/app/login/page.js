@@ -58,7 +58,7 @@ export default function LoginForm() {
         allFriends: data.user.friends,
         pet: data.user.pet
       })
-      
+
       // Store token in local storage
       localStorage.setItem("token", data.token)
 

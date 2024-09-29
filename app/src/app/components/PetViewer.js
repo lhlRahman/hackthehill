@@ -107,7 +107,7 @@ function ModelViewer({ modelUrl }) {
   )
 }
 
-export default function PetViewer( visible, petUrl ) {
+export default function PetViewer( petUrl ) {
   const [prompt, setPrompt] = useState('')
   const [modelUrl, setModelUrl] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
