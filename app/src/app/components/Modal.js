@@ -29,11 +29,11 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, mission, setTokens, tokens
         console.log("submitted");
         const active = true;
         let title = e.target.title.value;
-        let description = e.target.description.value;
+        let datetime = e.target.datetime.value;
         let location = address || null;
         
         
-        if (title && description && location){
+        if (title && datetime && location){
             setTokens(tokens+1);
             setMission({title, description, location});
             onClose();
@@ -69,9 +69,9 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, mission, setTokens, tokens
                         />
                         <input
                             className="bg-white text-black-500 p-1 rounded"
-                            id="description"
-                            name="description"
-                            placeholder="Description"
+                            id="datetime"
+                            name="datetime"
+                            type="datetime-local"
                         />
                         <div className={`mt-4 mb-3 ${styles.locationWrapper} ${styles.box}`}>
                             <AutoCompleteInput
