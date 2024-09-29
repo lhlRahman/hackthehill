@@ -8,18 +8,17 @@ import PetViewer from "../components/PetViewer.js";
 
 export default function Home() {
 
-  const basepos = [45.420480, -75.681280];
-
   const basetext = {
     active:false,
     title:"Add a new Mission!",
     datetime: Date(),
-    location: "a place"
+    location: "Parliament Hill"
   }
 
   const [mission, setMission] = useState(basetext);
   const { username } = useAppStatesContext();
   const [tokens, setTokens] = useState(0);
+  const [visible, setVisible] = useState(true);
 
     return (
         <div className="bg-slate-50 min-h-screen pb-10">
@@ -41,11 +40,12 @@ export default function Home() {
 
               <div className="text-black border-black box-border p-2 border-4 w-full">
                 Tokens: {tokens}
-                <PetViewer />
+                <PetViewer visible={visible}/>
+                <StreetViewMap visible={!visible} destination={mission.location}/>
                 </div>
 
               <div>
-                <EditMission setTokens={setTokens} tokens={tokens} setMission={setMission} mission={mission} ></EditMission>
+                <button className="bg-black min-w-full" onClick={()=> {setVisible(!visible)}}>{visible ? "Switch to Map" : "Switch to Pet"}</button>
               </div>
           </div>
       </div>

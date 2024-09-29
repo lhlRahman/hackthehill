@@ -106,7 +106,7 @@ function ModelViewer({ modelUrl }) {
   )
 }
 
-export default function PetViewer() {
+export default function PetViewer( {visible} ) {
   const [prompt, setPrompt] = useState('')
   const [modelUrl, setModelUrl] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -195,41 +195,43 @@ export default function PetViewer() {
       }
     }
   }, [taskId])
-
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">3D Pet Generator</h1>
-      <div className="mb-4">
-        <input
-          type="text"
-          value={prompt}
-          onChange={(e) => {
-            console.log(`PetViewer: Prompt changed to: ${e.target.value}`)
-            setPrompt(e.target.value)
-          }}
-          placeholder="Describe your pet (e.g., 'A cute blue cat')"
-          className="w-full p-2 border rounded"
-        />
-      </div>
-      <button
-        onClick={generateModel}
-        disabled={isGenerating || !prompt}
-        className="bg-blue-500 text-white p-2 rounded disabled:bg-gray-300"
-      >
-        {isGenerating ? 'Generating...' : 'Generate 3D Pet'}
-      </button>
-      {error && (
-        <p className="text-red-500 mt-2">Error: {error}</p>
-      )}
-      {isGenerating && (
-        <p className="mt-2">Generating your 3D pet. This may take a few minutes...</p>
-      )}
-      {modelUrl && (
-        <div className="mt-4">
-          <h2 className="text-xl font-bold mb-2">Your 3D Pet</h2>
-          <ModelViewer modelUrl={modelUrl} />
+  if (!visible) return null;
+  else {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">3D Pet Generator</h1>
+        <div className="mb-4">
+          <input
+            type="text"
+            value={prompt}
+            onChange={(e) => {
+              console.log(`PetViewer: Prompt changed to: ${e.target.value}`)
+              setPrompt(e.target.value)
+            }}
+            placeholder="Describe your pet (e.g., 'A cute blue cat')"
+            className="w-full p-2 border rounded"
+          />
         </div>
-      )}
-    </div>
-  )
+        <button
+          onClick={generateModel}
+          disabled={isGenerating || !prompt}
+          className="bg-blue-500 text-white p-2 rounded disabled:bg-gray-300"
+        >
+          {isGenerating ? 'Generating...' : 'Generate 3D Pet'}
+        </button>
+        {error && (
+          <p className="text-red-500 mt-2">Error: {error}</p>
+        )}
+        {isGenerating && (
+          <p className="mt-2">Generating your 3D pet. This may take a few minutes...</p>
+        )}
+        {modelUrl && (
+          <div className="mt-4">
+            <h2 className="text-xl font-bold mb-2">Your 3D Pet</h2>
+            <ModelViewer modelUrl={modelUrl} />
+          </div>
+        )}
+      </div>
+    )
+  }
 }
