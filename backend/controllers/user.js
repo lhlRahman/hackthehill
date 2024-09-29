@@ -63,6 +63,8 @@ const loginUser = async (req, res) => {
           expiresIn: tokenObject.expires,
           user: {
             username: user.username,
+            balance: user.points,
+            friends: user.friends,
             _id: user._id,
           },
         });

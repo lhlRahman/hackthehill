@@ -4,7 +4,7 @@ import AutoCompleteInput from './autoCompleteInput.js';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const SpringButton = () => {
+const SpringButton = ({setTokens, setMission, tokens}) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
       <div className="place-content-center">
@@ -14,12 +14,12 @@ const SpringButton = () => {
         >
           Start Mission
         </button>
-        <SpringModal isOpen={isOpen} setIsOpen={setIsOpen} />
+        <SpringModal isOpen={isOpen} setIsOpen={setIsOpen} setMission={setMission} setTokens={setTokens} tokens={tokens} />
       </div>
     );
   };
 
-const SpringModal = ({ isOpen, setIsOpen, setMission, mission, setTokens, tokens }) => {
+const SpringModal = ({ isOpen, setIsOpen, setMission, setTokens, tokens }) => {
     const [coordinates, setCoordinates] = useState([]);
     const [address, setAddress] = useState("");
 
@@ -32,11 +32,9 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, mission, setTokens, tokens
         let description = e.target.description.value;
         let location = address || null;
         
-        
         if (title && description && location){
             setTokens(tokens+1);
             setMission({title, description, location});
-            onClose();
         }
 
     }
@@ -62,25 +60,27 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, mission, setTokens, tokens
                     <h1 className='text-2xl font-extrabold mb-6'>Start a mission</h1>
                     <form method="post" action="/home" className="flex flex-col justify-center gap-3 w-3/4" onSubmit={(e)=>handleSubmit(e)}>
                         <input
-                            className="bg-white text-black-500 p-1 rounded"
+                            className="bg-white text-black p-1 rounded"
                             id="title"
                             name="title"
                             placeholder="Title"
                         />
                         <input
-                            className="bg-white text-black-500 p-1 rounded"
+                            className="bg-white text-black p-1 rounded"
                             id="description"
                             name="description"
                             placeholder="Description"
                         />
-                        <div className={`mt-4 mb-3 ${styles.locationWrapper} ${styles.box}`}>
+                        <div className={`mt-4 mb-3 text-black ${styles.locationWrapper} ${styles.box}`}>
                             <AutoCompleteInput
                                 setCoordinates={setCoordinates}
                                 setAddress={setAddress}
                             />
                         </div>
                         <button
-                            className="rounded border border-solid border-white text-white">
+                            className="rounded border border-solid border-white text-white"
+                            onClick={() => setIsOpen(false)}
+                            >
                                 Submit
                         </button>
                     </form>

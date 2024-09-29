@@ -12,6 +12,9 @@ export function AppStates({ children }) {
   const [allMissions, setAllMissions] = useState([]);
   const [allFriends, setAllFriends] = useState([]);
   const [currentLocation, setCurrentLocation] = useState([]);
+  const [id, setUserId] = useState(0);
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('')
   const [balance, setBalance] = useState(0);
 
   const addAlert = ({ message, type, time }) => {
@@ -101,6 +104,12 @@ export function AppStates({ children }) {
         setCurrentLocation,
         balance,
         setBalance,
+        id,
+        setUserId,
+        username,
+        setUserName,
+        password,
+        setPassword
       }}
     >
       {children}

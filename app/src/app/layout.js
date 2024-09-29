@@ -1,5 +1,8 @@
+"use client"
+
 import localFont from "next/font/local";
 import "./globals.css";
+import { AppStates } from "../app/components/user-context.js"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -12,19 +15,16 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata = {
-  title: "JustDoIt",
-  description: "Gameify Self-Accountability",
-};
-
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
+    <AppStates>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+            { children }
+        </body>
+      </html>
+    </AppStates>
   );
 }

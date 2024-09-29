@@ -10,7 +10,7 @@ export default function EditMission( { setTokens, tokens, active } ) {
 
     return (
         <div>
-            <button className="bg-gray-500 min-w-full" onClick={onClick} >Give Up</button>
+            <button className="bg-black min-w-full" onClick={onClick} >Give Up</button>
         </div>
     )
 }
