@@ -35,9 +35,10 @@ const SpringModal = ({ isOpen, setIsOpen, setMission, mission, setTokens, tokens
         
         if (title && description && location){
             setTokens(tokens+1);
-            setMission({title, description, location, active});
+            setMission({title, description, location});
             onClose();
         }
+
     }
     
     return (

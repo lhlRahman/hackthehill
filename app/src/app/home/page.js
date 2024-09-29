@@ -8,7 +8,7 @@ export default function Home() {
   const basetext = {
     active:false,
     title:"Add a new Mission!",
-    description: "a sample mission",
+    datetime: new Date(),
     location: "a place"
   }
 
@@ -27,12 +27,12 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col center-items ml-64 mr-64 mt-16">
-            <h2>Current Mission: {mission.location}</h2>
+            <h2>Current Mission: {mission.datetime}</h2>
 
             <div className=" border-red-500 border-4 w-full h-40">Tokens: {tokens}</div>
 
               <div>
-                <EditMission setTokens={setTokens} tokens={tokens} mission={mission} setMission={setMission}></EditMission>
+                <EditMission setTokens={setTokens} tokens={tokens} active={mission.active} ></EditMission>
               </div>
           </div>
       </div>
