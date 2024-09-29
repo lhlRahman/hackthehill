@@ -1,12 +1,25 @@
 'use client'
 import styles from '../styles/Modal.module.scss';
 import AutoCompleteInput from './autoCompleteInput.js';
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
-export default function Modal({show, onClose, setMission, mission, setTokens, tokens}) {
-    
-    let message = "Add a Mission!";
+const SpringButton = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <div className="place-content-center">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium px-4 py-2 rounded hover:opacity-90 transition-opacity"
+        >
+          Start Mission
+        </button>
+        <SpringModal isOpen={isOpen} setIsOpen={setIsOpen} />
+      </div>
+    );
+  };
 
+const SpringModal = ({ isOpen, setIsOpen, setMission, mission, setTokens, tokens }) => {
     const [coordinates, setCoordinates] = useState([]);
     const [address, setAddress] = useState("");
 
@@ -26,42 +39,57 @@ export default function Modal({show, onClose, setMission, mission, setTokens, to
             onClose();
         }
     }
-
-
-    if (show==false) {
-        return null;
-    }
-    else {
-        console.log(String(show));
-        return (
-            <div className="fixed top-0 left-0 w-100% h-100% bg-opacity-50 bg-white flex justify-center items-center">
-                <h1>{message}</h1>
-                <form method="post" action="/home" className="flex flex-col gap-1" onSubmit={(e)=>handleSubmit(e)}>
-                    <input
-                        className="bg-white text-gray-500"
-                        id="title"
-                        name="title"
-                        placeholder="Title"
-                    />
-                    <input
-                        className="bg-white text-gray-500"
-                        id="description"
-                        name="description"
-                        placeholder="Description"
-                    />
-                    <div className={`${styles.locationWrapper} ${styles.box}`}>
-                        <AutoCompleteInput
-                            setCoordinates={setCoordinates}
-                            setAddress={setAddress}
+    
+    return (
+        <AnimatePresence>
+        {isOpen && (
+            <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="bg-slate-900/20 backdrop-blur p-8 fixed inset-0 z-50 grid place-items-center overflow-y-scroll cursor-pointer"
+            >
+            <motion.div
+                initial={{ scale: 0, rotate: "12.5deg" }}
+                animate={{ scale: 1, rotate: "0deg" }}
+                exit={{ scale: 0, rotate: "0deg" }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white p-6 rounded-lg w-full max-w-lg shadow-xl cursor-default relative overflow-hidden"
+            >
+                <div className="w-100% h-100% flex flex-col justify-center items-center">
+                    <h1 className='text-2xl font-extrabold mb-6'>Start a mission</h1>
+                    <form method="post" action="/home" className="flex flex-col justify-center gap-3 w-3/4" onSubmit={(e)=>handleSubmit(e)}>
+                        <input
+                            className="bg-white text-black-500 p-1 rounded"
+                            id="title"
+                            name="title"
+                            placeholder="Title"
                         />
-                    </div>
-                    <button
-                        className="bg-gray-500 text-white">
-                            Add!
-                    </button>
-                </form>
-                
-            </div>
-        )
-    }
-}
+                        <input
+                            className="bg-white text-black-500 p-1 rounded"
+                            id="description"
+                            name="description"
+                            placeholder="Description"
+                        />
+                        <div className={`mt-4 mb-3 ${styles.locationWrapper} ${styles.box}`}>
+                            <AutoCompleteInput
+                                setCoordinates={setCoordinates}
+                                setAddress={setAddress}
+                            />
+                        </div>
+                        <button
+                            className="rounded border border-solid border-white text-white">
+                                Submit
+                        </button>
+                    </form>
+                </div>
+            </motion.div>
+            </motion.div>
+        )}
+        </AnimatePresence>
+    );
+};
+
+
+export default SpringButton
