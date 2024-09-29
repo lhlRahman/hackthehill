@@ -45,7 +45,7 @@ export default function LoginForm() {
       // Update context state
       setBalance(data.user.balance)
       setUsername(data.user.username)
-      setId(data.user.id)
+      setId(data.user._id)
       setAllFriends(data.user.friends)
       
       // Log the updated values from the context
@@ -55,7 +55,7 @@ export default function LoginForm() {
         id: data.user.id,
         allFriends: data.user.friends
       })
-      
+
       // Store token in local storage
       localStorage.setItem("token", data.token)
 

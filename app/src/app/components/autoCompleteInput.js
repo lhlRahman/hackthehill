@@ -48,6 +48,7 @@ const AutoCompleteInput = ({ setCoordinates, setAddress }) => {
 
   return (
     <input
+      className="bg-white text-black p-1 w-full rounded"
       ref={autocompleteInputRef}
       type="text"
       placeholder="Enter a location"
