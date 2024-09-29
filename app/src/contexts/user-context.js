@@ -1,10 +1,9 @@
 'use client';
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 const Context = createContext();
 
 export function AppStates({ children }) {
-
   const [allMissions, setAllMissions] = useState([]);
   const [allFriends, setAllFriends] = useState([]);
   const [currentLocation, setCurrentLocation] = useState([]);
@@ -12,20 +11,17 @@ export function AppStates({ children }) {
   const [username, setUsername] = useState('');
   const [balance, setBalance] = useState(0);
 
+  useEffect(() => {
+    console.log("AppStates context updated:", { username, balance, id, allFriends, allMissions })
+  }, [username, balance, id, allFriends, allMissions])
 
   const contextValue = {
-    allMissions,
-    setAllMissions,
-    allFriends,
-    setAllFriends,
-    currentLocation,
-    setCurrentLocation,
-    id,
-    setId,
-    username,
-    setUsername,
-    balance,
-    setBalance,
+    allMissions, setAllMissions,
+    allFriends, setAllFriends,
+    currentLocation, setCurrentLocation,
+    id, setId,
+    username, setUsername,
+    balance, setBalance,
   };
 
   return (

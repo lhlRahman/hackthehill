@@ -1,12 +1,14 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from "react"
+import React, { useState, useCallback } from "react"
 import { motion } from "framer-motion"
 import { useAppStatesContext } from "../../contexts/user-context.js"
 import { AlertCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginForm() {
   const { setBalance, setUsername, setId, setAllFriends } = useAppStatesContext()
+  const router = useRouter()
 
   const [inputs, setInputs] = useState({
     username: "",
@@ -56,34 +58,26 @@ export default function LoginForm() {
       
       // Store token in local storage
       localStorage.setItem("token", data.token)
-<<<<<<< HEAD
-=======
 
-      // go to /home
-
-      window.location.replace("/home")
-      // Redirect to home page
-      // router.push("/log")
->>>>>>> 6ff1b29876a299fa7b5e665e821fdd2db31608f7
+      // Navigate to home page
+      router.push("/home")
     } catch (error) {
       setError("There was a problem with the login operation.")
       console.error("There was a problem with the fetch operation:", error)
     } finally {
-    
       setIsLoading(false)
     }
-  }, [inputs, setBalance, setUsername, setId, setAllFriends])
+  }, [inputs, setBalance, setUsername, setId, setAllFriends, router])
 
   return (
     <section className="grid min-h-screen grid-cols-1 bg-slate-50 md:grid-cols-[1fr,_400px] lg:grid-cols-[1fr,_600px]">
       <Logo />
       <motion.div
         initial="initial"
-        whileInView="animate"
+        animate="animate"
         transition={{
           staggerChildren: 0.05,
         }}
-        viewport={{ once: true }}
         className="flex items-center justify-center pb-4 pt-20 md:py-20"
       >
         <div className="mx-auto max-w-lg px-4 md:pr-0">
@@ -139,16 +133,16 @@ export default function LoginForm() {
                 scale: 0.985,
               }}
               type="submit"
-              className="mb-1.5 w-full rounded bg-indigo-600 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-indigo-700"
+              className="mb-1.5 w-full rounded bg-indigo-600 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoading}
             >
               {isLoading ? "Signing In..." : "Sign In"}
             </motion.button>
 
             {error && (
-              <motion.div variants={primaryVariants} className="mt-2 text-red-600">
+              <motion.div variants={primaryVariants} className="mt-2 text-red-600 flex items-center">
                 <AlertCircle className="inline-block mr-2" />
-                {error}
+                <span>{error}</span>
               </motion.div>
             )}
           </form>
@@ -164,10 +158,8 @@ const Logo = () => {
     <img
       width="50"
       height="50"
-      viewBox="0 0 50 39"
-      fill="none"
       src="/logo.png"
-      xmlns="http://www.w3.org/2000/svg"
+      alt="Company Logo"
       className="absolute left-[50%] top-4 -translate-x-[50%] fill-slate-950 md:left-4 md:-translate-x-0"
     />
   )
@@ -187,13 +179,18 @@ const primaryVariants = {
 const SupplementalContent = () => {
   return (
     <div className="group sticky top-4 m-4 h-80 overflow-hidden rounded-3xl rounded-tl-[4rem] bg-gradient-to-r from-violet-600 to-indigo-600 md:h-[calc(100vh_-_2rem)]">
-      <motion.div className="absolute inset-0 flex flex-col items-start justify-end bg-gradient-to-t from-slate-950/90 to-slate-950/0 p-8">
-        <motion.h2 className="mb-2 text-3xl font-semibold leading-[1.25] text-white lg:text-4xl">
+      <motion.div 
+        initial="initial"
+        animate="animate"
+        variants={primaryVariants}
+        className="absolute inset-0 flex flex-col items-start justify-end bg-gradient-to-t from-slate-950/90 to-slate-950/0 p-8"
+      >
+        <h2 className="mb-2 text-3xl font-semibold leading-[1.25] text-white lg:text-4xl">
           Unlock Your Full Potential
-        </motion.h2>
-        <motion.p className="mb-6 max-w-md text-sm ">
+        </h2>
+        <p className="mb-6 max-w-md text-sm text-white/80">
           Join a community focused on self-growth and start your journey today.
-        </motion.p>
+        </p>
       </motion.div>
     </div>
   )
