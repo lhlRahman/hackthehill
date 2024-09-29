@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, useCallback, Suspense } from 'react'
+import { PlaceholdersAndVanishInput } from "./ui/placeholders-and-vanish-input"
+import { ErrorBoundary } from 'react-error-boundary'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, useGLTF } from '@react-three/drei'
-import { ErrorBoundary } from 'react-error-boundary'
-
+import { useAppStatesContext } from "../../contexts/user-context"
 function Model({ url }) {
   console.log(`Model component: Loading model from URL: ${url}`)
   const { scene } = useGLTF(url)
@@ -108,10 +109,48 @@ function ModelViewer({ modelUrl }) {
 
 export default function PetViewer( {visible} ) {
   const [prompt, setPrompt] = useState('')
-  const [modelUrl, setModelUrl] = useState('')
+  const [modelUrl, setModelUrl] = useState('https://assets.meshy.ai/b2e42015-d3d8-42b0-89d7-d8dbc433ff6e/tasks/01923c44-6037-7ac1-8e65-6badc923ce37/output/model.glb?Expires=4881168000&Signature=gedU~WJ~7M7BGjhyDUGAuZMlGYQ~1klfl1CyX8CU1CgHReM3cuBfdTKNiXuTk6bwDuXM8ihRW1G82v-zQTf0keTv5kCWkd-~u2GzJxhIOjH9LMZJCHNFnidk1cLuqIvyk~REGYlKRMgXEmpWuLmjf7X4c9xDtsBI-gYEiG-lRSFNq1DMo-TWEVfeNyvRz0Ca4xZ2oAJc9k3kRE4lBjogPnsdbXFWssmmHJA72pw4xDCB~MNP0i6rDDZUVJgb3o44~XmhQRVFuQJczgbyVv06uvsfpS-sfiWQ6iTMPkO3yMiVvaGT7WbXrqzrmV4faMb90X5YegAWA3OwSpGl3G4Xhg__&Key-Pair-Id=KL5I0C8H7HX83')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState(null)
   const [taskId, setTaskId] = useState(null)
+  const { id } = useAppStatesContext();
+  
+  console.log("id dkwa;skd;l" + id)
+
+
+  const accept = async () => {
+    const response = await fetch(`http://localhost:3001/user/updateuser`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            url: modelUrl
+    })
+}
+    )
+
+    const data = await response.json();
+    console.log(data);
+    if (data.success) {
+        console.log('User updated successfully');
+    } else {
+        console.error('Failed to update user');
+    }
+
+  }
+
+
+
+  const placeholders = [
+    "A Dragon",
+    "LEBRON JAMES",
+    "A ninja",
+    "A unicorn",
+    "A cat",
+    "A dog",
+  ]
 
   const generateModel = async () => {
     console.log('PetViewer: Starting model generation')
@@ -138,8 +177,8 @@ export default function PetViewer( {visible} ) {
 
       const generateData = await generateResponse.json()
       console.log('PetViewer: Model generation response data:', generateData)
-      setModelUrl(generateData.model_link.glb)
-      setTaskId(generateData.id)
+      setTaskId(generateData.model_link.id)
+      setModelUrl(generateData.model_link.model_urls.glb)
       console.log(`PetViewer: Task ID set to: ${generateData.id}`)
     } catch (err) {
       console.error('PetViewer: Error during model generation:', err)
@@ -148,44 +187,46 @@ export default function PetViewer( {visible} ) {
     }
   }
 
+  const pollTaskStatus = useCallback(async () => {
+    if (!taskId) return
+
+    console.log(`PetViewer: Polling status for Task ID: ${taskId}`)
+    try {
+      const response = await fetch(`http://localhost:3001/api/v2/text-to-3d/${taskId}`)
+      console.log(`PetViewer: Received polling response with status: ${response.status}`)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`PetViewer: Failed to poll task: ${response.statusText}\n${errorText}`)
+        throw new Error(`Failed to poll task: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      console.log('PetViewer: Polling response data:', data)
+
+      if (data.status === 'SUCCEEDED' && data.model_urls && data.model_urls.glb) {
+        console.log('PetViewer: Model generation succeeded. Model URL:', data.model_urls.glb)
+        setModelUrl(data.model_urls.glb)
+        setIsGenerating(false)
+      } else if (data.status === 'FAILED') {
+        console.error('PetViewer: Model generation failed')
+        throw new Error('Model generation failed')
+      } else {
+        console.log(`PetViewer: Model generation status: ${data.status}. Continuing to poll...`)
+      }
+    } catch (err) {
+      console.error('PetViewer: Error while polling task status:', err)
+      setError(err.message)
+      setIsGenerating(false)
+    }
+  }, [taskId])
+
   useEffect(() => {
     let pollingInterval
-    if (taskId) {
+
+    if (taskId && isGenerating) {
       console.log(`PetViewer: Starting to poll task status for Task ID: ${taskId}`)
-      pollingInterval = setInterval(async () => {
-        console.log(`PetViewer: Polling status for Task ID: ${taskId}`)
-        try {
-          const response = await fetch(`http://localhost:3001/api/v2/text-to-3d/${taskId}`)
-          console.log(`PetViewer: Received polling response with status: ${response.status}`)
-
-          if (!response.ok) {
-            const errorText = await response.text()
-            console.error(`PetViewer: Failed to poll task: ${response.statusText}\n${errorText}`)
-            throw new Error(`Failed to poll task: ${response.statusText}`)
-          }
-
-          const data = await response.json()
-          console.log('PetViewer: Polling response data:', data)
-
-          if (data.status === 'SUCCEEDED' && data.model_urls && data.model_urls.glb) {
-            console.log('PetViewer: Model generation succeeded. Model URL:', data.model_urls.glb)
-            setModelUrl(data.model_urls.glb)
-            setIsGenerating(false)
-            clearInterval(pollingInterval)
-          } else if (data.status === 'FAILED') {
-            console.error('PetViewer: Model generation failed')
-            throw new Error('Model generation failed')
-          } else {
-            console.log(`PetViewer: Model generation status: ${data.status}. Continuing to poll...`)
-          }
-          // If status is still PENDING or IN_PROGRESS, continue polling
-        } catch (err) {
-          console.error('PetViewer: Error while polling task status:', err)
-          setError(err.message)
-          setIsGenerating(false)
-          clearInterval(pollingInterval)
-        }
-      }, 5000) // Poll every 5 seconds
+      pollingInterval = setInterval(pollTaskStatus, 5000) // Poll every 5 seconds
     }
 
     return () => {
@@ -195,43 +236,41 @@ export default function PetViewer( {visible} ) {
       }
     }
   }, [taskId])
-  if (!visible) return null;
-  else {
-    return (
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">3D Pet Generator</h1>
-        <div className="mb-4">
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => {
-              console.log(`PetViewer: Prompt changed to: ${e.target.value}`)
-              setPrompt(e.target.value)
-            }}
-            placeholder="Describe your pet (e.g., 'A cute blue cat')"
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <button
-          onClick={generateModel}
-          disabled={isGenerating || !prompt}
-          className="bg-blue-500 text-white p-2 rounded disabled:bg-gray-300"
-        >
-          {isGenerating ? 'Generating...' : 'Generate 3D Pet'}
-        </button>
-        {error && (
-          <p className="text-red-500 mt-2">Error: {error}</p>
-        )}
-        {isGenerating && (
-          <p className="mt-2">Generating your 3D pet. This may take a few minutes...</p>
-        )}
-        {modelUrl && (
-          <div className="mt-4">
-            <h2 className="text-xl font-bold mb-2">Your 3D Pet</h2>
-            <ModelViewer modelUrl={modelUrl} />
-          </div>
-        )}
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">3D Pet Generator</h1>
+      <div className="mb-4">
+        <input
+          type="text"
+          value={prompt}
+          onChange={(e) => {
+            console.log(`PetViewer: Prompt changed to: ${e.target.value}`)
+            setPrompt(e.target.value)
+          }}
+          placeholder="Describe your pet (e.g., 'A cute blue cat')"
+          className="w-full p-2 border rounded"
+        />
       </div>
-    )
-  }
+      <button
+        onClick={generateModel}
+        disabled={isGenerating || !prompt}
+        className="bg-blue-500 text-white p-2 rounded disabled:bg-gray-300"
+      >
+        {isGenerating ? 'Generating...' : 'Generate 3D Pet'}
+      </button>
+      {error && (
+        <p className="text-red-500 mt-2">Error: {error}</p>
+      )}
+      {isGenerating && (
+        <p className="mt-2">Generating your 3D pet. This may take a few minutes...</p>
+      )}
+      {modelUrl && (
+        <div className="mt-4">
+          <h2 className="text-xl font-bold mb-2">Your 3D Pet</h2>
+          <ModelViewer modelUrl={modelUrl} />
+        </div>
+      )}
+    </div>
+  )
 }

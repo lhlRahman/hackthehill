@@ -7,7 +7,7 @@ import { AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginForm() {
-  const { setBalance, setUsername, setId, setAllFriends } = useAppStatesContext()
+  const { setBalance, setUsername, setId, setAllFriends, setPet } = useAppStatesContext()
   const router = useRouter()
 
   const [inputs, setInputs] = useState({
@@ -45,22 +45,28 @@ export default function LoginForm() {
       // Update context state
       setBalance(data.user.balance)
       setUsername(data.user.username)
-      setId(data.user.id)
+      setId(data.user._id)
       setAllFriends(data.user.friends)
+      setPet(data.user.pet)
+
       
       // Log the updated values from the context
       console.log("Updated context values:", {
         balance: data.user.balance,
         username: data.user.username,
         id: data.user.id,
-        allFriends: data.user.friends
+        allFriends: data.user.friends,
+        pet: data.user.pet
       })
       
       // Store token in local storage
       localStorage.setItem("token", data.token)
 
-      // Navigate to home page
-      router.push("/home")
+      if (data.user && data.user.pet && data.user.pet !== "") {
+        router.push("/home")
+      } else {
+        router.push("/create")
+      }
     } catch (error) {
       setError("There was a problem with the login operation.")
       console.error("There was a problem with the fetch operation:", error)

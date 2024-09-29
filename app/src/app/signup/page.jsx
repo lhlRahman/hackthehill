@@ -24,7 +24,7 @@ export default function Signup() {
     }
 
     try {
-      const response = await fetch("https://hackthehill.onrender.com/user/signup", {
+      const response = await fetch("http://localhost:3001/user/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +41,7 @@ export default function Signup() {
 
       const data = await response.json()
       localStorage.setItem("token", data.token)
-      window.location.replace("/")
+      window.location.replace("/login")
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error)
     }
