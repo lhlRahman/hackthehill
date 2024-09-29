@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { fromAddress } from 'react-geocode';
 
 const icon = L.icon({ iconUrl: "/images/marker-icon.png" });
+const icon2 = L.icon({ iconUrl: "images/marker-icon-red.png" });
+
 
 export default function StreetViewMap({ visible, destination }) {
   const [userPos, setUserPos] = useState(null);       // Stores user's position
@@ -55,7 +56,7 @@ export default function StreetViewMap({ visible, destination }) {
 
           {/* Destination marker if destination coordinates exist */}
           {destination && (
-            <Marker position={destination} icon={icon}>
+            <Marker position={destination} icon={icon2} >
               <Popup>Destination</Popup>
             </Marker>
           )}
